@@ -1,0 +1,5 @@
+export * from './alphabet'
+export * from './chinese'
+export * from './chinese2'
+export * from './english'
+export * from './index'

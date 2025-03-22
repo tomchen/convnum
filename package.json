@@ -1,0 +1,83 @@
+{
+  "name": "convnum",
+  "version": "0.0.0",
+  "description": "Universal number converter",
+  "keywords": [
+    "number",
+    "numeral",
+    "numerical",
+    "sequence",
+    "ordinal",
+    "convert",
+    "converter",
+    "conversion",
+    "utils",
+    "date",
+    "language",
+    "transform"
+  ],
+  "homepage": "https://convnum.tomchen.org/",
+  "bugs": {
+    "url": "https://github.com/tomchen/convnum/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tomchen/convnum.git"
+  },
+  "license": "MIT",
+  "author": "Tom Chen <tomchen.org@gmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "dist/index.cjs",
+  "unpkg": "dist/index.global.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "checkall": "bun run lint && bun run typecheck && bun run format && bun test",
+    "docs": "typedoc",
+    "format": "prettier --write src test",
+    "lint": "eslint src test --fix",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "version": "bun scripts/bump.ts"
+  },
+  "browserslist": [
+    ">0%"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/bun": "^1.2.4",
+    "date-fns": "^4.1.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-compat": "^6.0.2",
+    "prettier": "^3.5.3",
+    "terser": "^5.39.0",
+    "tsup": "^8.4.0",
+    "typedoc": "^0.27.9",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1"
+  },
+  "packageManager": "bun@1.2.4",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

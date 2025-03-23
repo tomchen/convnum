@@ -1,4 +1,5 @@
 export * from './alphabet'
+export * from './astrosign'
 export * from './chinese'
 export * from './chinese2'
 export * from './english'

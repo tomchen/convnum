@@ -1,6 +1,7 @@
 export * from './alphabet'
 export * from './astrosign'
 export * from './bases'
+export * from './datetime'
 export * from './chinese'
 export * from './chinese2'
 export * from './english'

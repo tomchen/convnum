@@ -1,4 +1,5 @@
 export * from './alphabet'
+export * from './arabic'
 export * from './astrosign'
 export * from './bases'
 export * from './datetime'

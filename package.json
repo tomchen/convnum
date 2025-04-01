@@ -1,7 +1,7 @@
 {
   "name": "convnum",
   "version": "0.0.0",
-  "description": "Universal number converter",
+  "description": "Convert between various number representations, numeral systems",
   "keywords": [
     "number",
     "numeral",

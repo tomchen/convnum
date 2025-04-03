@@ -49,4 +49,7 @@ export const toAstroSign = toToArrayItemFn(astroSigns)
  * fromAstroSign(1.5) // Error: Input must be a string
  * fromAstroSign(undefined) // Error: Input must be a string
  */
-export const fromAstroSign = toFromArrayItemFn(astroSigns, capitalizeFirstLetter)
+export const fromAstroSign = toFromArrayItemFn(
+  astroSigns,
+  capitalizeFirstLetter,
+)

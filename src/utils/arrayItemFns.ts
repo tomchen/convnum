@@ -24,7 +24,10 @@ export function toToArrayItemFn(arr: string[]) {
   }
 }
 
-export function toFromArrayItemFn(arr: string[], sanitizeFn?: (item: string) => string) {
+export function toFromArrayItemFn(
+  arr: string[],
+  sanitizeFn?: (item: string) => string,
+) {
   return function (item: string) {
     return fromArrayItem(sanitizeFn ? sanitizeFn(item) : item, arr)
   }

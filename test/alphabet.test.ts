@@ -259,6 +259,13 @@ describe('Alphabet-related conversions', () => {
       expect(fromNatoPhonetic('Zulu')).toBe(26)
     })
 
+    test('fromNatoPhonetic case insensitive', () => {
+      expect(fromNatoPhonetic('alfa')).toBe(1)
+      expect(fromNatoPhonetic('zulu')).toBe(26)
+      expect(fromNatoPhonetic('ALPHA')).toBe(1)
+      expect(fromNatoPhonetic('ZULU')).toBe(26)
+    })
+
     test('fromNatoPhonetic all words', () => {
       const words = [
         'Alfa',

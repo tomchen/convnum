@@ -12,7 +12,7 @@
  */
 import { execSync } from 'child_process'
 import { readFileSync, writeFileSync } from 'fs'
-import { valid, inc } from '../src/'
+import { valid, inc } from 'semver-ts'
 
 const versionOrRelease: string | undefined = process.argv[2]
 const identifier: string | undefined = process.argv[3]

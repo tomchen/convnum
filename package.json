@@ -67,6 +67,7 @@
     "eslint": "^9.22.0",
     "eslint-plugin-compat": "^6.0.2",
     "prettier": "^3.5.3",
+    "semver-ts": "^1.0.3",
     "terser": "^5.39.0",
     "tsup": "^8.4.0",
     "typedoc": "^0.27.9",

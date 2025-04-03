@@ -1,9 +1,5 @@
 import { expect, test, describe } from 'bun:test'
-import {
-  toEnglishWords,
-  fromEnglishWords,
-  validateEnglishWords,
-} from '../src/english'
+import { toEnglishWords, fromEnglishWords, validateEnglishWords } from '../src'
 
 const arr = [
   'zero',

@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'bun:test'
-import { toEnglishCardinal, fromEnglishCardinal } from '../src/englishCardinal'
+import { toEnglishCardinal, fromEnglishCardinal } from '../src'
 
 describe('toEnglishCardinal', () => {
   test('converts positive numbers correctly', () => {

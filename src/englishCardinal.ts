@@ -3,7 +3,7 @@
  * @param num - The number to convert
  * @returns The cardinal form of the number
  * @throws Error if input is not a finite number
- * @note Can handle negative numbers and zero
+ * @remarks Can handle negative numbers and zero
  */
 export function toEnglishCardinal(num: number): string {
   if (!Number.isFinite(num)) {
@@ -21,9 +21,14 @@ export function toEnglishCardinal(num: number): string {
 
   // Regular cases
   const lastDigit = absNum % 10
-  const suffix = lastDigit === 1 ? 'st' :
-                 lastDigit === 2 ? 'nd' :
-                 lastDigit === 3 ? 'rd' : 'th'
+  const suffix =
+    lastDigit === 1
+      ? 'st'
+      : lastDigit === 2
+        ? 'nd'
+        : lastDigit === 3
+          ? 'rd'
+          : 'th'
 
   return (isNegative ? '-' : '') + numStr + suffix
 }
@@ -33,11 +38,11 @@ export function toEnglishCardinal(num: number): string {
  * @param cardinal - The cardinal number (e.g., "1st", "2nd")
  * @returns The numeric value
  * @throws Error if input is not a valid English cardinal number
- * @note Can handle negative numbers and zero
+ * @remarks Can handle negative numbers and zero
  */
 export function fromEnglishCardinal(cardinal: string): number {
   // Sanitize input
-  cardinal = cardinal.trim()
+  cardinal = cardinal.trim().toLowerCase()
 
   // Handle negative numbers
   const isNegative = cardinal.startsWith('-')
@@ -64,9 +69,14 @@ export function fromEnglishCardinal(cardinal: string): number {
 
   // Regular cases
   const lastDigit = num % 10
-  const expectedSuffix = lastDigit === 1 ? 'st' :
-                        lastDigit === 2 ? 'nd' :
-                        lastDigit === 3 ? 'rd' : 'th'
+  const expectedSuffix =
+    lastDigit === 1
+      ? 'st'
+      : lastDigit === 2
+        ? 'nd'
+        : lastDigit === 3
+          ? 'rd'
+          : 'th'
 
   if (suffix !== expectedSuffix) {
     throw new Error('Invalid cardinal number')

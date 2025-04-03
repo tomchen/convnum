@@ -1,6 +1,6 @@
-# ConvNum: TypeScript / JavaScript utility library for converting between number representations, numeral systems
+# ConvNum: TypeScript/JavaScript Utility Library for Converting Between Number Representations and Numeral Systems
 
-A comprehensive TypeScript utility library for converting between various number representations, numeral systems, date/time formats, etc.
+A comprehensive TypeScript utility library for converting between various number representations, numeral systems, date/time formats, and more. Includes validation and type detection capabilities.
 
 ## Installation
 
@@ -11,68 +11,70 @@ npm install convnum
 ## Usage
 
 ```typescript
-import {
-  toEnglishWords,
-  fromChineseWords,
-} from 'convnum'
+import { toEnglishWords, fromChineseWords } from 'convnum'
 
 console.log(toEnglishWords(12345)) // 'twelve thousand three hundred forty-five'
 console.log(fromChineseWords('一万二千三百四十五')) // 12345
 ```
 
+## Supported Types
+
+The library supports conversion and detection of the following number representation types:
+
+(`NumType` is a type used in this library to identify different number representations)
+
+| Name                     | NumType                  | Examples                            | Notes                                                                                                                                                                                                  |
+| ------------------------ | ------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Decimal                  | `decimal`                | "123", "456"                        | Standard base-10 numbers                                                                                                                                                                               |
+| Latin letters            | `latin_letter`           | "A", "b", "Z"                       | Standard Latin alphabet                                                                                                                                                                                |
+| Month                    | `month_name`             | "January", "JAN", "february", "Feb" | Month names in various languages supported for conversion via [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl). Only English is supported for detection |
+| Day of week              | `day_of_week`            | "Monday", "MON", "tuesday", "Tue"   | Day names in various languages supported for conversion via [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl). Only English is supported for detection   |
+| Roman numerals           | `roman`                  | "VI", "vi", "MMMCMXCIX"             | Roman numeral system (range: 1-3999). Does not support single Unicode character form like "Ⅵ"                                                                                                          |
+| Arabic numerals          | `arabic`                 | "٠", "١", "٢"                       | Eastern Arabic numerals                                                                                                                                                                                |
+| English cardinal         | `english_cardinal`       | "1st", "2Nd", "3RD"                 | Ordinal numbers with suffixes                                                                                                                                                                          |
+| English words            | `english_words`          | "one hundred twenty-three", "thReE" | Written English numbers                                                                                                                                                                                |
+| French words             | `french_words`           | "cent vingt-trois", "TroIs"         | Written French numbers (currently supports traditional writing like "cent vingt-trois", not "cent-vingt-trois")                                                                                        |
+| Chinese words            | `chinese_words`          | "一百二十三"                        | Standard Chinese numerals                                                                                                                                                                              |
+| Chinese financial        | `chinese_financial`      | "壹佰贰拾叁"                        | Traditional financial characters                                                                                                                                                                       |
+| Binary                   | `binary`                 | "1010", "1101"                      | Base-2 numbers (0-1 only)                                                                                                                                                                              |
+| Octal                    | `octal`                  | "123", "456"                        | Base-8 numbers (0-7 only)                                                                                                                                                                              |
+| Hexadecimal              | `hexadecimal`            | "1A", "FF", "abc"                   | Base-16 numbers (0-9, A-F)                                                                                                                                                                             |
+| Greek letters            | `greek_letter`           | "Α", "α", "Ω"                       | Greek alphabet                                                                                                                                                                                         |
+| Cyrillic letters         | `cyrillic_letter`        | "А", "а", "Я"                       | Cyrillic alphabet                                                                                                                                                                                      |
+| Chinese Heavenly Stems   | `chinese_heavenly_stem`  | "甲", "乙", "丙"                    | 天干 (Tiān Gān)                                                                                                                                                                                        |
+| Chinese Earthly Branches | `chinese_earthly_branch` | "子", "丑", "寅"                    | 地支 (Dì Zhī)                                                                                                                                                                                          |
+| Chinese Solar Terms      | `chinese_solar_term`     | "立春", "雨水"                      | 节气 (Jié Qì)                                                                                                                                                                                          |
+| Astrological signs       | `astrological_sign`      | "Aries", "tauRuS"                   | Zodiac signs                                                                                                                                                                                           |
+| NATO phonetic            | `nato_phonetic`          | "Alfa", "alpha", "braVo", "Charlie" | NATO phonetic alphabet                                                                                                                                                                                 |
+
+**Special types:**
+| Name | NumType | Examples | Notes |
+|------|---------|----------|-------|
+| Invalid | `invalid` | `null`, `undefined` | Any non-string inputs (type errors) |
+| Empty | `empty` | `""`, `"   "` | Empty or whitespace-only strings |
+| Unknown | `unknown` | "xyz", "!@#$" | Non-empty strings that don't match any type |
+
+**Note:** [Julian day](https://en.wikipedia.org/wiki/Julian_day) is supported only for conversion, not for detection, and is therefore not included in the `NumType` type.
+
 ## Features
 
-- Number system conversions:
+- **Conversion, validation, and detection** functions for all supported types
+- **Chinese language utilities** (limited to characters used in this library):
+  - Simplified ⇄ Traditional Chinese conversion
+- **Robust error handling** for invalid or unexpected inputs
+- **Thorough test coverage**, including edge cases and uncommon scenarios
+- **Full support for:**
+  - Zero, negative values, large numbers (up to quintillions), and other edge cases
+  - Multiple locales and number formats
+  - Case-insensitive input across all functions
+  - Zero runtime dependencies
+  - Tree-shakable builds (when using specific functions — not the all-in-one version — with ES modules and a proper bundler)
 
-  - Roman numerals (e.g. "VI") (1-3999)
-  - Binary, Octal, Hexadecimal, and custom base conversion
-  - Arabic numerals (e.g. ٠, ١, ٢, etc.)
+## To-do
 
-- Language-specific number words:
-
-  - English words (e.g. "one hundred twenty-three")
-  - English cardinal numbers (e.g. "1st")
-  - French words (e.g. "cent-vingt-trois")
-  - Chinese words (e.g. "一百二十三")
-  - Chinese financial characters (e.g. "壹佰贰拾叁")
-  - Chinese Heavenly Stems (天干) (e.g. "甲") and Earthly Branches (地支) (e.g. "子")
-  - Chinese Solar Terms (节气) (e.g. "立春")
-
-- Alphabet conversions:
-
-  - Latin letters (A-Z, a-z)
-  - Greek letters (Α-Ω, α-ω)
-  - Cyrillic letters (А-Я, а-я)
-  - NATO phonetic alphabet ("Alpha", "Bravo", "Charlie")
-
-- Date and time conversions:
-
-  - Month names in multiple languages (e.g. "January") (all languages supported by [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl))
-  - Day of week names in multiple languages (e.g. "Monday") (all languages supported by [`Intl`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl))
-  - [Julian day](https://en.wikipedia.org/wiki/Julian_day) conversions
-  - Astrological signs (e.g. "Aries")
-
-- Chinese language utilities:
-
-  - Simplified to Traditional Chinese conversion
-  - Traditional to Simplified Chinese conversion
-
-- Validation functions for all conversions
-
-- Comprehensive error handling for invalid inputs
-
-- Support for:
-  - Negative numbers
-  - Decimal numbers
-  - Large numbers (up to quintillions)
-  - Zero and special cases
-  - Multiple locales and formats
-  - Case-insensitive matching
-
-## To-do:
-
-- Braille
-- Morse code
+- Braille support
+- Morse code support
+- Loose matching for French and English words
 
 ## License
 

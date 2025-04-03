@@ -1,9 +1,5 @@
 import { expect, test, describe } from 'bun:test'
-import {
-  toChineseWords,
-  fromChineseWords,
-  validateChineseWords,
-} from '../src/chinese'
+import { toChineseWords, fromChineseWords, validateChineseWords } from '../src'
 
 const arr = [
   '零',

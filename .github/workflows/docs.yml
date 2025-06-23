@@ -1,3 +1,5 @@
+# need to set build Source as "GitHub Actions" in "Pages" settings in the GitHub repo
+# and allow `v*.*.*` tags in "Environments" settings in the GitHub repo
 name: Docs
 
 on:

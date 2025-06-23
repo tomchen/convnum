@@ -151,9 +151,9 @@ describe('Converter Functions', () => {
     })
 
     test('should throw error for unsupported types', () => {
-      expect(() => convertTo(123, 'unsupported_type' as unknown as NumType)).toThrow(
-        'Unsupported type: unsupported_type',
-      )
+      expect(() =>
+        convertTo(123, 'unsupported_type' as unknown as NumType),
+      ).toThrow('Unsupported type: unsupported_type')
     })
 
     test('should throw error for invalid conversions', () => {

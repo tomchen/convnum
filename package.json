@@ -1,6 +1,6 @@
 {
   "name": "convnum",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Convert between various number representations, numeral systems",
   "keywords": [
     "number",

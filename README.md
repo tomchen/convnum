@@ -17,6 +17,8 @@ console.log(toEnglishWords(12345)) // 'twelve thousand three hundred forty-five'
 console.log(fromChineseWords('一万二千三百四十五')) // 12345
 ```
 
+Detailed documentation is available at [https://convnum.tomchen.org](https://convnum.tomchen.org).
+
 ## Supported Types
 
 The library supports conversion and detection of the following number representation types:

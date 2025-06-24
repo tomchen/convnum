@@ -1,7 +1,15 @@
 /* eslint-disable compat/compat */
 import { expect, test, describe } from 'bun:test'
 import { convertFrom, convertTo, typeFromFns, typeToFns } from '../src'
-import { NumType, VALID_NUM_TYPES } from '../src/utils/types'
+import { NumType, VALID_NUM_TYPES, TypeInfo } from '../src/utils/types'
+
+// Helper function to create TypeInfo objects for easier testing
+function typeInfo(type: NumType, caseType?: 'sentence' | 'title' | 'lower' | 'upper', format?: 'long' | 'short'): TypeInfo {
+  const info: TypeInfo = { type }
+  if (caseType !== undefined) info.case = caseType
+  if (format !== undefined) info.format = format
+  return info
+}
 
 describe('Converter Functions', () => {
   describe('typeFromFns and typeToFns mappings', () => {
@@ -75,50 +83,50 @@ describe('Converter Functions', () => {
 
   describe('convertFrom function', () => {
     test('should convert decimal strings', () => {
-      expect(convertFrom('123', 'decimal')).toBe(123)
-      expect(convertFrom('-45.67', 'decimal')).toBe(-45.67)
+      expect(convertFrom('123', typeInfo('decimal'))).toBe(123)
+      expect(convertFrom('-45.67', typeInfo('decimal'))).toBe(-45.67)
     })
 
     test('should convert binary strings', () => {
-      expect(convertFrom('1010', 'binary')).toBe(10)
-      expect(convertFrom('11111111', 'binary')).toBe(255)
+      expect(convertFrom('1010', typeInfo('binary'))).toBe(10)
+      expect(convertFrom('11111111', typeInfo('binary'))).toBe(255)
     })
 
     test('should convert Roman numerals', () => {
-      expect(convertFrom('IV', 'roman')).toBe(4)
-      expect(convertFrom('MMMCMXCIX', 'roman')).toBe(3999)
+      expect(convertFrom('IV', typeInfo('roman'))).toBe(4)
+      expect(convertFrom('MMMCMXCIX', typeInfo('roman'))).toBe(3999)
     })
 
     test('should convert English words', () => {
-      expect(convertFrom('one', 'english_words')).toBe(1)
-      expect(convertFrom('twenty-one', 'english_words')).toBe(21)
+      expect(convertFrom('one', typeInfo('english_words'))).toBe(1)
+      expect(convertFrom('twenty-one', typeInfo('english_words'))).toBe(21)
     })
 
     test('should convert Chinese words', () => {
-      expect(convertFrom('一', 'chinese_words')).toBe(1)
-      expect(convertFrom('一百二十三', 'chinese_words')).toBe(123)
+      expect(convertFrom('一', typeInfo('chinese_words'))).toBe(1)
+      expect(convertFrom('一百二十三', typeInfo('chinese_words'))).toBe(123)
     })
 
     test('should throw error for unsupported types', () => {
       expect(() =>
-        convertFrom('123', 'unsupported_type' as unknown as NumType),
+        convertFrom('123', typeInfo('unsupported_type' as unknown as NumType)),
       ).toThrow('Unsupported type: unsupported_type')
     })
 
     test('should throw error for invalid conversions', () => {
-      expect(() => convertFrom('invalid', 'roman')).toThrow(
+      expect(() => convertFrom('invalid', typeInfo('roman'))).toThrow(
         'Failed to convert "invalid" from type "roman"',
       )
     })
 
     test('should throw error for special types', () => {
-      expect(() => convertFrom('123', 'invalid')).toThrow(
+      expect(() => convertFrom('123', typeInfo('invalid'))).toThrow(
         'Cannot convert invalid type',
       )
-      expect(() => convertFrom('123', 'empty')).toThrow(
+      expect(() => convertFrom('123', typeInfo('empty'))).toThrow(
         'Cannot convert empty type',
       )
-      expect(() => convertFrom('123', 'unknown')).toThrow(
+      expect(() => convertFrom('123', typeInfo('unknown'))).toThrow(
         'Cannot convert unknown type',
       )
     })
@@ -126,50 +134,50 @@ describe('Converter Functions', () => {
 
   describe('convertTo function', () => {
     test('should convert to decimal strings', () => {
-      expect(convertTo(123, 'decimal')).toBe('123')
-      expect(convertTo(-45.67, 'decimal')).toBe('-45.67')
+      expect(convertTo(123, typeInfo('decimal'))).toBe('123')
+      expect(convertTo(-45.67, typeInfo('decimal'))).toBe('-45.67')
     })
 
     test('should convert to binary strings', () => {
-      expect(convertTo(10, 'binary')).toBe('1010')
-      expect(convertTo(255, 'binary')).toBe('11111111')
+      expect(convertTo(10, typeInfo('binary'))).toBe('1010')
+      expect(convertTo(255, typeInfo('binary'))).toBe('11111111')
     })
 
     test('should convert to Roman numerals', () => {
-      expect(convertTo(4, 'roman')).toBe('IV')
-      expect(convertTo(3999, 'roman')).toBe('MMMCMXCIX')
+      expect(convertTo(4, typeInfo('roman'))).toBe('IV')
+      expect(convertTo(3999, typeInfo('roman'))).toBe('MMMCMXCIX')
     })
 
     test('should convert to English words', () => {
-      expect(convertTo(1, 'english_words')).toBe('one')
-      expect(convertTo(21, 'english_words')).toBe('twenty-one')
+      expect(convertTo(1, typeInfo('english_words'))).toBe('one')
+      expect(convertTo(21, typeInfo('english_words'))).toBe('twenty-one')
     })
 
     test('should convert to Chinese words', () => {
-      expect(convertTo(1, 'chinese_words')).toBe('一')
-      expect(convertTo(123, 'chinese_words')).toBe('一百二十三')
+      expect(convertTo(1, typeInfo('chinese_words'))).toBe('一')
+      expect(convertTo(123, typeInfo('chinese_words'))).toBe('一百二十三')
     })
 
     test('should throw error for unsupported types', () => {
       expect(() =>
-        convertTo(123, 'unsupported_type' as unknown as NumType),
+        convertTo(123, typeInfo('unsupported_type' as unknown as NumType)),
       ).toThrow('Unsupported type: unsupported_type')
     })
 
     test('should throw error for invalid conversions', () => {
-      expect(() => convertTo(0, 'roman')).toThrow(
+      expect(() => convertTo(0, typeInfo('roman'))).toThrow(
         'Failed to convert 0 to type "roman"',
       )
     })
 
     test('should throw error for special types', () => {
-      expect(() => convertTo(123, 'invalid')).toThrow(
+      expect(() => convertTo(123, typeInfo('invalid'))).toThrow(
         'Cannot convert to invalid type',
       )
-      expect(() => convertTo(123, 'empty')).toThrow(
+      expect(() => convertTo(123, typeInfo('empty'))).toThrow(
         'Cannot convert to empty type',
       )
-      expect(() => convertTo(123, 'unknown')).toThrow(
+      expect(() => convertTo(123, typeInfo('unknown'))).toThrow(
         'Cannot convert to unknown type',
       )
     })
@@ -178,30 +186,53 @@ describe('Converter Functions', () => {
   describe('Round-trip conversions', () => {
     test('should work for decimal', () => {
       const original = 123.45
-      const converted = convertTo(original, 'decimal')
-      const back = convertFrom(converted, 'decimal')
+      const converted = convertTo(original, typeInfo('decimal'))
+      const back = convertFrom(converted, typeInfo('decimal'))
       expect(back).toBe(original)
     })
 
     test('should work for binary', () => {
       const original = 42
-      const converted = convertTo(original, 'binary')
-      const back = convertFrom(converted, 'binary')
+      const converted = convertTo(original, typeInfo('binary'))
+      const back = convertFrom(converted, typeInfo('binary'))
       expect(back).toBe(original)
     })
 
     test('should work for English words', () => {
       const original = 123
-      const converted = convertTo(original, 'english_words')
-      const back = convertFrom(converted, 'english_words')
+      const converted = convertTo(original, typeInfo('english_words'))
+      const back = convertFrom(converted, typeInfo('english_words'))
       expect(back).toBe(original)
     })
 
     test('should work for Chinese words', () => {
-      const original = 123
-      const converted = convertTo(original, 'chinese_words')
-      const back = convertFrom(converted, 'chinese_words')
+      const original = 456
+      const converted = convertTo(original, typeInfo('chinese_words'))
+      const back = convertFrom(converted, typeInfo('chinese_words'))
       expect(back).toBe(original)
+    })
+  })
+
+  describe('Case and format functionality', () => {
+    test('should handle case parameters', () => {
+      expect(convertTo(10, typeInfo('hexadecimal', 'upper'))).toBe('A')
+      expect(convertTo(10, typeInfo('hexadecimal', 'lower'))).toBe('a')
+      expect(convertTo(4, typeInfo('roman', 'upper'))).toBe('IV')
+      expect(convertTo(4, typeInfo('roman', 'lower'))).toBe('iv')
+    })
+
+    test('should handle format parameters', () => {
+      expect(convertTo(1, typeInfo('month_name', 'sentence', 'long'))).toBe('January')
+      expect(convertTo(1, typeInfo('month_name', 'sentence', 'short'))).toBe('Jan')
+      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'long'))).toBe('Sunday')
+      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'short'))).toBe('Sun')
+    })
+
+    test('should handle case with words', () => {
+      expect(convertTo(21, typeInfo('english_words', 'lower'))).toBe('twenty-one')
+      expect(convertTo(21, typeInfo('english_words', 'upper'))).toBe('TWENTY-ONE')
+      expect(convertTo(21, typeInfo('english_words', 'title'))).toBe('Twenty-One')
+      expect(convertTo(21, typeInfo('english_words', 'sentence'))).toBe('Twenty-one')
     })
   })
 })

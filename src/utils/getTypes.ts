@@ -14,40 +14,80 @@ import {
   fromLatinLetter,
   fromGreekLetter,
   fromCyrillicLetter,
+  natoAlphabet,
 } from '../alphabet'
-import { fromMonth, fromDayOfWeek } from '../datetime'
+import { fromMonth, fromDayOfWeek, toMonth, toDayOfWeek } from '../datetime'
 import { capitalizeFirstLetter } from './letterFns'
-import { NumType, VALID_NUM_TYPES } from './types'
+import { NumType, VALID_NUM_TYPES, TypeInfo, CaseType, FormatType } from './types'
 
-const natoWords = [
-  'Alfa',
-  'Bravo',
-  'Charlie',
-  'Delta',
-  'Echo',
-  'Foxtrot',
-  'Golf',
-  'Hotel',
-  'India',
-  'Juliett',
-  'Kilo',
-  'Lima',
-  'Mike',
-  'November',
-  'Oscar',
-  'Papa',
-  'Quebec',
-  'Romeo',
-  'Sierra',
-  'Tango',
-  'Uniform',
-  'Victor',
-  'Whiskey',
-  'X-ray',
-  'Yankee',
-  'Zulu',
-]
+/**
+ * Determines the case of a string
+ */
+function detectCase(str: string): CaseType {
+  if (str === str.toLowerCase()) return 'lower'
+  if (str === str.toUpperCase()) return 'upper'
 
+  // Check for title case (first letter of each word capitalized, separated by spaces and "-")
+  const words = str.split(/[\s-]+/)
+  if (words.length > 1) {
+    const isTitleCase = words.every(word =>
+      word.length > 0 &&
+      word[0] === word[0].toUpperCase() &&
+      word.slice(1) === word.slice(1).toLowerCase()
+    )
+    if (isTitleCase) return 'title'
+  }
+
+  // Check for sentence case (first letter capitalized, rest lowercase)
+  if (str[0] === str[0].toUpperCase() && str.slice(1) === str.slice(1).toLowerCase()) {
+    return 'sentence'
+  }
+
+  // If none of the above patterns match exactly, default to sentence for mixed case
+  return 'sentence'
+}
+
+/**
+ * Determines the format of month/day names
+ */
+function detectDateFormat(str: string, type: 'month' | 'day'): FormatType | undefined {
+  const normalizedStr = str.toLowerCase()
+
+  if (type === 'month') {
+    // Check if it's a short month name
+    for (let i = 1; i <= 12; i++) {
+      const shortMonth = toMonth(i, 'en-US', 'short').toLowerCase()
+      const longMonth = toMonth(i, 'en-US', 'long').toLowerCase()
+      if (normalizedStr === shortMonth) return 'short'
+      if (normalizedStr === longMonth) return 'long'
+    }
+  } else if (type === 'day') {
+    // Check if it's a short day name
+    for (let i = 0; i < 7; i++) {
+      const shortDay = toDayOfWeek(i, 'en-US', 'short').toLowerCase()
+      const longDay = toDayOfWeek(i, 'en-US', 'long').toLowerCase()
+      if (normalizedStr === shortDay) return 'short'
+      if (normalizedStr === longDay) return 'long'
+    }
+  }
+
+  return undefined
+}
+
+/**
+ * Mapping of type names to their validation functions that check if a string matches a specific type.
+ * Each function takes a string and returns true if it's a valid representation of that type.
+ * Used internally by getTypes() and hasType() but exported for direct access to specific validators.
+ * @example
+ * ```ts
+ * typeValidators.decimal('123') // returns true
+ * typeValidators.decimal('abc') // returns false
+ * typeValidators.roman('IV') // returns true
+ * typeValidators.roman('invalid') // returns false
+ * typeValidators.latin_letter('A') // returns true
+ * typeValidators.latin_letter('AB') // returns false
+ * ```
+ */
 export const typeValidators: Record<NumType, (str: string) => boolean> = {
   decimal: (str) => /^-?\d+(\.\d+)?$/.test(str),
   binary: (str) => /^[01]+$/.test(str),
@@ -118,7 +158,7 @@ export const typeValidators: Record<NumType, (str: string) => boolean> = {
       .replace(/^Alpha$/i, 'Alfa')
       .replace(/^Juliet$/i, 'Juliett')
       .replace(/^Xray$/i, 'X-ray')
-    return natoWords.includes(normalizedWord)
+    return natoAlphabet.includes(normalizedWord)
   },
   month_name: (str) => fromMonth(str) !== null,
   day_of_week: (str) => fromDayOfWeek(str) !== null,
@@ -156,10 +196,50 @@ export const typeValidators: Record<NumType, (str: string) => boolean> = {
 }
 
 /**
+ * Creates TypeInfo object with detected properties for a given type and string
+ */
+function createTypeInfo(str: string, type: NumType): TypeInfo {
+  const typeInfo: TypeInfo = { type }
+
+  // Types that have case property
+  const caseSensitiveTypes = [
+    'latin_letter', 'greek_letter', 'cyrillic_letter', 'roman', 'hexadecimal',
+    'english_cardinal', 'english_words', 'french_words', 'astrological_sign', 'nato_phonetic'
+  ]
+
+  // Types that have both case and format properties
+  const dateTypes = ['month_name', 'day_of_week']
+
+  if (caseSensitiveTypes.includes(type) || dateTypes.includes(type)) {
+    typeInfo.case = detectCase(str)
+  }
+
+  if (dateTypes.includes(type)) {
+    if (type === 'month_name') {
+      typeInfo.format = detectDateFormat(str, 'month')
+    } else if (type === 'day_of_week') {
+      typeInfo.format = detectDateFormat(str, 'day')
+    }
+  }
+
+  return typeInfo
+}
+
+/**
  * Checks if a string has a specific type among all supported types in this library
  * @param str - The input string to check
- * @param targetType - The specific type to check for
+ * @param targetType - The specific type to check for (e.g., 'decimal', 'roman', 'latin_letter')
  * @returns True if the string has the specified type, false otherwise
+ * @example
+ * ```ts
+ * hasType('123', 'decimal') // returns true
+ * hasType('IV', 'roman') // returns true
+ * hasType('A', 'latin_letter') // returns true
+ * hasType('invalid', 'roman') // returns false
+ * hasType('', 'empty') // returns true
+ * hasType('xyz123', 'unknown') // returns true
+ * hasType(null, 'invalid') // returns true
+ * ```
  */
 export function hasType(str: string, targetType: NumType): boolean {
   if (typeof str !== 'string') {
@@ -186,32 +266,47 @@ export function hasType(str: string, targetType: NumType): boolean {
 }
 
 /**
- * Identifies all possible types of input string among all supported types in this library
- * @param str - The input string to identify
- * @returns An array of all possible types the string could be
+ * Identifies all possible types of input string among all supported types in this library.
+ * Returns TypeInfo objects that include the detected type along with contextual properties
+ * like case (lower, upper, sentence, title) and format (short, long) when applicable.
+ * @param str - The input string to identify and analyze
+ * @returns An array of all possible TypeInfo objects the string could be, including detected case and format properties
+ * @example
+ * ```ts
+ * getTypes('123') // returns [{ type: 'decimal' }, { type: 'octal' }, { type: 'hexadecimal', case: 'lower' }]
+ * getTypes('A') // returns [{ type: 'latin_letter', case: 'upper' }, { type: 'hexadecimal', case: 'upper' }]
+ * getTypes('IV') // returns [{ type: 'roman', case: 'upper' }]
+ * getTypes('January') // returns [{ type: 'month_name', case: 'sentence', format: 'long' }]
+ * getTypes('Jan') // returns [{ type: 'month_name', case: 'sentence', format: 'short' }]
+ * getTypes('Twenty-One') // returns [{ type: 'english_words', case: 'title' }]
+ * getTypes('一') // returns [{ type: 'chinese_words' }]
+ * getTypes('invalid-string') // returns [{ type: 'unknown' }]
+ * getTypes('') // returns [{ type: 'empty' }]
+ * getTypes(null) // returns [{ type: 'invalid' }]
+ * ```
  */
-export function getTypes(str: string): NumType[] {
+export function getTypes(str: string): TypeInfo[] {
   if (typeof str !== 'string') {
-    return ['invalid']
+    return [{ type: 'invalid' }]
   }
 
   const trimmed = str.trim()
   if (trimmed === '') {
-    return ['empty']
+    return [{ type: 'empty' }]
   }
 
-  const types: NumType[] = []
+  const typeInfos: TypeInfo[] = []
 
   for (const type of VALID_NUM_TYPES) {
     if (typeValidators[type](trimmed)) {
-      types.push(type)
+      typeInfos.push(createTypeInfo(trimmed, type))
     }
   }
 
   // If no types found, return unknown
-  if (types.length === 0) {
-    return ['unknown']
+  if (typeInfos.length === 0) {
+    return [{ type: 'unknown' }]
   }
 
-  return types
+  return typeInfos
 }

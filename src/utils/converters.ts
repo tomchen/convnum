@@ -27,9 +27,52 @@ import {
 } from '../alphabet'
 import { toMonth, fromMonth, toDayOfWeek, fromDayOfWeek } from '../datetime'
 import { toBin, fromBin, toOct, fromOct, toHex, fromHex } from '../bases'
-import { NumType } from './types'
+import { NumType, TypeInfo } from './types'
 
-// Mapping of type names to their "From" functions (string -> number)
+/**
+ * Applies case transformation to a string based on the specified case type
+ */
+function applyCase(
+  str: string,
+  caseType?: 'sentence' | 'title' | 'lower' | 'upper',
+): string {
+  if (!caseType) {
+    return str
+  }
+
+  switch (caseType) {
+    case 'lower':
+      return str.toLowerCase()
+    case 'upper':
+      return str.toUpperCase()
+    case 'sentence':
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+    case 'title':
+      return str
+        .split(/(\s+|-+)/)
+        .map((part) =>
+          /^[\s-]+$/.test(part)
+            ? part
+            : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
+        )
+        .join('')
+    default:
+      return str
+  }
+}
+
+/**
+ * Mapping of type names to their "From" functions that convert strings to numbers.
+ * Each function takes a string representation and returns the corresponding numeric value.
+ * Used internally by convertFrom() but exported for direct access to specific converters.
+ * @example
+ * ```ts
+ * typeFromFns.decimal('123') // returns 123
+ * typeFromFns.roman('IV') // returns 4
+ * typeFromFns.latin_letter('A') // returns 1
+ * typeFromFns.hexadecimal('FF') // returns 255
+ * ```
+ */
 export const typeFromFns: Record<NumType, (str: string) => number> = {
   decimal: (str) => parseFloat(str),
   binary: fromBin,
@@ -49,12 +92,16 @@ export const typeFromFns: Record<NumType, (str: string) => number> = {
   nato_phonetic: fromNatoPhonetic,
   month_name: (str) => {
     const result = fromMonth(str)
-    if (result === null) throw new Error(`Invalid month name: ${str}`)
+    if (result === null) {
+      throw new Error(`Invalid month name: ${str}`)
+    }
     return result
   },
   day_of_week: (str) => {
     const result = fromDayOfWeek(str)
-    if (result === null) throw new Error(`Invalid day of week: ${str}`)
+    if (result === null) {
+      throw new Error(`Invalid day of week: ${str}`)
+    }
     return result
   },
   latin_letter: fromLatinLetter,
@@ -72,29 +119,84 @@ export const typeFromFns: Record<NumType, (str: string) => number> = {
   },
 }
 
-// Mapping of type names to their "To" functions (number -> string)
-export const typeToFns: Record<NumType, (num: number) => string> = {
+/**
+ * Mapping of type names to their "To" functions that convert numbers to strings.
+ * Each function takes a number and optional TypeInfo for formatting, returning the string representation.
+ * Supports case and format transformations when TypeInfo is provided.
+ * Used internally by convertTo() but exported for direct access to specific converters.
+ * @example
+ * ```ts
+ * typeToFns.decimal(123) // returns '123'
+ * typeToFns.roman(4) // returns 'IV'
+ * typeToFns.roman(4, { case: 'lower' }) // returns 'iv'
+ * typeToFns.latin_letter(1, { case: 'lower' }) // returns 'a'
+ * typeToFns.hexadecimal(255, { case: 'lower' }) // returns 'ff'
+ * typeToFns.month_name(1, { case: 'upper', format: 'short' }) // returns 'JAN'
+ * ```
+ */
+export const typeToFns: Record<
+  NumType,
+  (num: number, typeInfo?: TypeInfo) => string
+> = {
   decimal: (num) => num.toString(),
-  binary: toBin,
-  octal: toOct,
-  hexadecimal: toHex,
-  roman: toRoman,
-  arabic: toArabicNumerals,
-  english_cardinal: toEnglishCardinal,
-  english_words: toEnglishWords,
-  french_words: toFrenchWords,
-  chinese_words: toChineseWords,
+  binary: (num) => toBin(num),
+  octal: (num) => toOct(num),
+  hexadecimal: (num, typeInfo) => {
+    const result = toHex(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  roman: (num, typeInfo) => {
+    const result = toRoman(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  arabic: (num) => toArabicNumerals(num),
+  english_cardinal: (num, typeInfo) => {
+    const result = toEnglishCardinal(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  english_words: (num, typeInfo) => {
+    const result = toEnglishWords(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  french_words: (num, typeInfo) => {
+    const result = toFrenchWords(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  chinese_words: (num) => toChineseWords(num),
   chinese_financial: (num) => chineseWordstoFinancial(toChineseWords(num)),
-  chinese_heavenly_stem: toChineseHeavenlyStem,
-  chinese_earthly_branch: toChineseEarthlyBranch,
-  chinese_solar_term: toChineseSolarTerm,
-  astrological_sign: toAstroSign,
-  nato_phonetic: toNatoPhonetic,
-  month_name: toMonth,
-  day_of_week: toDayOfWeek,
-  latin_letter: toLatinLetter,
-  greek_letter: toGreekLetter,
-  cyrillic_letter: toCyrillicLetter,
+  chinese_heavenly_stem: (num) => toChineseHeavenlyStem(num),
+  chinese_earthly_branch: (num) => toChineseEarthlyBranch(num),
+  chinese_solar_term: (num) => toChineseSolarTerm(num),
+  astrological_sign: (num, typeInfo) => {
+    const result = toAstroSign(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  nato_phonetic: (num, typeInfo) => {
+    const result = toNatoPhonetic(num)
+    return applyCase(result, typeInfo?.case)
+  },
+  month_name: (num, typeInfo) => {
+    const format = typeInfo?.format || 'long'
+    const result = toMonth(num, 'en-US', format)
+    return applyCase(result, typeInfo?.case)
+  },
+  day_of_week: (num, typeInfo) => {
+    const format = typeInfo?.format || 'long'
+    const result = toDayOfWeek(num, 'en-US', format)
+    return applyCase(result, typeInfo?.case)
+  },
+  latin_letter: (num, typeInfo) => {
+    const upperCase = typeInfo?.case === 'upper'
+    return toLatinLetter(num, upperCase)
+  },
+  greek_letter: (num, typeInfo) => {
+    const upperCase = typeInfo?.case === 'upper'
+    return toGreekLetter(num, upperCase)
+  },
+  cyrillic_letter: (num, typeInfo) => {
+    const upperCase = typeInfo?.case === 'upper'
+    return toCyrillicLetter(num, upperCase)
+  },
   // Special types that don't have conversion functions
   invalid: () => {
     throw new Error('Cannot convert to invalid type')
@@ -108,45 +210,75 @@ export const typeToFns: Record<NumType, (num: number) => string> = {
 }
 
 /**
- * Generalized function to convert a string to a number based on the specified type
- * @param str - The input string to convert
- * @param type - The type of the input string
+ * Generalized function to convert a string to a number based on the specified type.
+ * Supports all number formats including decimal, binary, octal, hexadecimal, Roman numerals,
+ * English/French words, Chinese characters, letters, and more. Case and format properties
+ * in TypeInfo are ignored during parsing (they're used for output formatting).
+ * @param str - The input string to convert (e.g., 'IV', 'twenty-one', '一百二十三')
+ * @param typeInfo - The type information specifying how to interpret the string
  * @returns The converted number
  * @throws Error if the type is not supported or conversion fails
+ * @example
+ * ```ts
+ * convertFrom('123', { type: 'decimal' }) // returns 123
+ * convertFrom('IV', { type: 'roman' }) // returns 4
+ * convertFrom('twenty-one', { type: 'english_words' }) // returns 21
+ * convertFrom('A', { type: 'latin_letter' }) // returns 1
+ * convertFrom('FF', { type: 'hexadecimal' }) // returns 255
+ * convertFrom('January', { type: 'month_name' }) // returns 1
+ * convertFrom('一百二十三', { type: 'chinese_words' }) // returns 123
+ * convertFrom('Aries', { type: 'astrological_sign' }) // returns 1
+ * ```
  */
-export function convertFrom(str: string, type: NumType): number {
-  const fromFn = typeFromFns[type]
+export function convertFrom(str: string, typeInfo: TypeInfo): number {
+  const fromFn = typeFromFns[typeInfo.type]
   if (!fromFn) {
-    throw new Error(`Unsupported type: ${type}`)
+    throw new Error(`Unsupported type: ${typeInfo.type}`)
   }
 
   try {
     return fromFn(str)
   } catch (error) {
     throw new Error(
-      `Failed to convert "${str}" from type "${type}": ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to convert "${str}" from type "${typeInfo.type}": ${error instanceof Error ? error.message : String(error)}`,
     )
   }
 }
 
 /**
- * Generalized function to convert a number to a string based on the specified type
- * @param num - The input number to convert
- * @param type - The target type for the output string
- * @returns The converted string
+ * Generalized function to convert a number to a string based on the specified type.
+ * Supports precise control over output formatting through case and format properties.
+ * Case options: 'lower', 'upper', 'sentence' (first letter capitalized), 'title' (each word capitalized).
+ * Format options: 'short' or 'long' for dates/months.
+ * @param num - The input number to convert (e.g., 4, 21, 123)
+ * @param typeInfo - The target type information including type, case, and format specifications
+ * @returns The converted string formatted according to the specified case and format
  * @throws Error if the type is not supported or conversion fails
+ * @example
+ * ```ts
+ * convertTo(4, { type: 'roman', case: 'upper' }) // returns 'IV'
+ * convertTo(4, { type: 'roman', case: 'lower' }) // returns 'iv'
+ * convertTo(21, { type: 'english_words', case: 'title' }) // returns 'Twenty-One'
+ * convertTo(21, { type: 'english_words', case: 'upper' }) // returns 'TWENTY-ONE'
+ * convertTo(1, { type: 'latin_letter', case: 'lower' }) // returns 'a'
+ * convertTo(255, { type: 'hexadecimal', case: 'upper' }) // returns 'FF'
+ * convertTo(1, { type: 'month_name', case: 'sentence', format: 'long' }) // returns 'January'
+ * convertTo(1, { type: 'month_name', case: 'upper', format: 'short' }) // returns 'JAN'
+ * convertTo(123, { type: 'chinese_words' }) // returns '一百二十三'
+ * convertTo(1, { type: 'astrological_sign', case: 'lower' }) // returns 'aries'
+ * ```
  */
-export function convertTo(num: number, type: NumType): string {
-  const toFn = typeToFns[type]
+export function convertTo(num: number, typeInfo: TypeInfo): string {
+  const toFn = typeToFns[typeInfo.type]
   if (!toFn) {
-    throw new Error(`Unsupported type: ${type}`)
+    throw new Error(`Unsupported type: ${typeInfo.type}`)
   }
 
   try {
-    return toFn(num)
+    return toFn(num, typeInfo)
   } catch (error) {
     throw new Error(
-      `Failed to convert ${num} to type "${type}": ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to convert ${num} to type "${typeInfo.type}": ${error instanceof Error ? error.message : String(error)}`,
     )
   }
 }

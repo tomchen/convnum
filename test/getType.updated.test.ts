@@ -3,14 +3,20 @@ import { getTypes, hasType } from '../src'
 import { NumType, TypeInfo } from '../src/utils/types'
 
 // Helper function to create TypeInfo objects for easier testing
-function typeInfo(type: NumType, caseType?: 'sentence' | 'title' | 'lower' | 'upper', format?: 'long' | 'short'): TypeInfo {
+function typeInfo(
+  type: NumType,
+  caseType?: 'sentence' | 'title' | 'lower' | 'upper',
+  format?: 'long' | 'short',
+): TypeInfo {
   const info: TypeInfo = { type }
-  if (caseType !== undefined) info.case = caseType
-  if (format !== undefined) info.format = format
+  if (caseType !== undefined) {
+    info.case = caseType
+  }
+  if (format !== undefined) {
+    info.format = format
+  }
   return info
 }
-
-
 
 describe('getTypes function', () => {
   describe('Basic type detection', () => {
@@ -63,49 +69,93 @@ describe('getTypes function', () => {
 
   describe('Word types with case', () => {
     test('should detect astrological signs with case', () => {
-      expect(getTypes('Aries')).toContainEqual(typeInfo('astrological_sign', 'sentence'))
-      expect(getTypes('ARIES')).toContainEqual(typeInfo('astrological_sign', 'upper'))
-      expect(getTypes('aries')).toContainEqual(typeInfo('astrological_sign', 'lower'))
+      expect(getTypes('Aries')).toContainEqual(
+        typeInfo('astrological_sign', 'sentence'),
+      )
+      expect(getTypes('ARIES')).toContainEqual(
+        typeInfo('astrological_sign', 'upper'),
+      )
+      expect(getTypes('aries')).toContainEqual(
+        typeInfo('astrological_sign', 'lower'),
+      )
     })
 
     test('should detect NATO phonetic with case', () => {
-      expect(getTypes('Alfa')).toContainEqual(typeInfo('nato_phonetic', 'sentence'))
-      expect(getTypes('ALFA')).toContainEqual(typeInfo('nato_phonetic', 'upper'))
-      expect(getTypes('alfa')).toContainEqual(typeInfo('nato_phonetic', 'lower'))
+      expect(getTypes('Alfa')).toContainEqual(
+        typeInfo('nato_phonetic', 'sentence'),
+      )
+      expect(getTypes('ALFA')).toContainEqual(
+        typeInfo('nato_phonetic', 'upper'),
+      )
+      expect(getTypes('alfa')).toContainEqual(
+        typeInfo('nato_phonetic', 'lower'),
+      )
     })
 
     test('should detect English words with case', () => {
       expect(getTypes('one')).toContainEqual(typeInfo('english_words', 'lower'))
-      expect(getTypes('One')).toContainEqual(typeInfo('english_words', 'sentence'))
+      expect(getTypes('One')).toContainEqual(
+        typeInfo('english_words', 'sentence'),
+      )
       expect(getTypes('ONE')).toContainEqual(typeInfo('english_words', 'upper'))
-      expect(getTypes('Twenty-One')).toContainEqual(typeInfo('english_words', 'title'))
+      expect(getTypes('Twenty-One')).toContainEqual(
+        typeInfo('english_words', 'title'),
+      )
     })
 
     test('should detect French words with case', () => {
       expect(getTypes('un')).toContainEqual(typeInfo('french_words', 'lower'))
-      expect(getTypes('Un')).toContainEqual(typeInfo('french_words', 'sentence'))
+      expect(getTypes('Un')).toContainEqual(
+        typeInfo('french_words', 'sentence'),
+      )
       expect(getTypes('UN')).toContainEqual(typeInfo('french_words', 'upper'))
-      expect(getTypes('Vingt-Et-Un')).toContainEqual(typeInfo('french_words', 'title'))
+      expect(getTypes('Vingt-Et-Un')).toContainEqual(
+        typeInfo('french_words', 'title'),
+      )
     })
   })
 
   describe('Date/time types with case and format', () => {
     test('should detect month names with case and format', () => {
-      expect(getTypes('January')).toContainEqual(typeInfo('month_name', 'sentence', 'long'))
-      expect(getTypes('JANUARY')).toContainEqual(typeInfo('month_name', 'upper', 'long'))
-      expect(getTypes('january')).toContainEqual(typeInfo('month_name', 'lower', 'long'))
-      expect(getTypes('Jan')).toContainEqual(typeInfo('month_name', 'sentence', 'short'))
-      expect(getTypes('JAN')).toContainEqual(typeInfo('month_name', 'upper', 'short'))
-      expect(getTypes('jan')).toContainEqual(typeInfo('month_name', 'lower', 'short'))
+      expect(getTypes('January')).toContainEqual(
+        typeInfo('month_name', 'sentence', 'long'),
+      )
+      expect(getTypes('JANUARY')).toContainEqual(
+        typeInfo('month_name', 'upper', 'long'),
+      )
+      expect(getTypes('january')).toContainEqual(
+        typeInfo('month_name', 'lower', 'long'),
+      )
+      expect(getTypes('Jan')).toContainEqual(
+        typeInfo('month_name', 'sentence', 'short'),
+      )
+      expect(getTypes('JAN')).toContainEqual(
+        typeInfo('month_name', 'upper', 'short'),
+      )
+      expect(getTypes('jan')).toContainEqual(
+        typeInfo('month_name', 'lower', 'short'),
+      )
     })
 
     test('should detect day of week with case and format', () => {
-      expect(getTypes('Monday')).toContainEqual(typeInfo('day_of_week', 'sentence', 'long'))
-      expect(getTypes('MONDAY')).toContainEqual(typeInfo('day_of_week', 'upper', 'long'))
-      expect(getTypes('monday')).toContainEqual(typeInfo('day_of_week', 'lower', 'long'))
-      expect(getTypes('Mon')).toContainEqual(typeInfo('day_of_week', 'sentence', 'short'))
-      expect(getTypes('MON')).toContainEqual(typeInfo('day_of_week', 'upper', 'short'))
-      expect(getTypes('mon')).toContainEqual(typeInfo('day_of_week', 'lower', 'short'))
+      expect(getTypes('Monday')).toContainEqual(
+        typeInfo('day_of_week', 'sentence', 'long'),
+      )
+      expect(getTypes('MONDAY')).toContainEqual(
+        typeInfo('day_of_week', 'upper', 'long'),
+      )
+      expect(getTypes('monday')).toContainEqual(
+        typeInfo('day_of_week', 'lower', 'long'),
+      )
+      expect(getTypes('Mon')).toContainEqual(
+        typeInfo('day_of_week', 'sentence', 'short'),
+      )
+      expect(getTypes('MON')).toContainEqual(
+        typeInfo('day_of_week', 'upper', 'short'),
+      )
+      expect(getTypes('mon')).toContainEqual(
+        typeInfo('day_of_week', 'lower', 'short'),
+      )
     })
   })
 
@@ -118,7 +168,9 @@ describe('getTypes function', () => {
 
     test('should detect Chinese financial', () => {
       expect(getTypes('壹')).toContainEqual(typeInfo('chinese_financial'))
-      expect(getTypes('壹佰贰拾叁')).toContainEqual(typeInfo('chinese_financial'))
+      expect(getTypes('壹佰贰拾叁')).toContainEqual(
+        typeInfo('chinese_financial'),
+      )
     })
 
     test('should detect Chinese heavenly stems', () => {
@@ -163,7 +215,9 @@ describe('getTypes function', () => {
   describe('Special cases', () => {
     test('should handle invalid inputs', () => {
       expect(getTypes(null as unknown as string)).toEqual([typeInfo('invalid')])
-      expect(getTypes(undefined as unknown as string)).toEqual([typeInfo('invalid')])
+      expect(getTypes(undefined as unknown as string)).toEqual([
+        typeInfo('invalid'),
+      ])
       expect(getTypes(123 as unknown as string)).toEqual([typeInfo('invalid')])
     })
 
@@ -181,10 +235,18 @@ describe('getTypes function', () => {
 
   describe('English cardinal numbers', () => {
     test('should detect English cardinal with case', () => {
-      expect(getTypes('1st')).toContainEqual(typeInfo('english_cardinal', 'lower'))
-      expect(getTypes('1ST')).toContainEqual(typeInfo('english_cardinal', 'upper'))
-      expect(getTypes('2nd')).toContainEqual(typeInfo('english_cardinal', 'lower'))
-      expect(getTypes('2ND')).toContainEqual(typeInfo('english_cardinal', 'upper'))
+      expect(getTypes('1st')).toContainEqual(
+        typeInfo('english_cardinal', 'lower'),
+      )
+      expect(getTypes('1ST')).toContainEqual(
+        typeInfo('english_cardinal', 'upper'),
+      )
+      expect(getTypes('2nd')).toContainEqual(
+        typeInfo('english_cardinal', 'lower'),
+      )
+      expect(getTypes('2ND')).toContainEqual(
+        typeInfo('english_cardinal', 'upper'),
+      )
     })
   })
 

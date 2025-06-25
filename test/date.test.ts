@@ -1,5 +1,9 @@
 import { expect, test, describe } from 'bun:test'
-import { parseDateString, formatDateString, formatMonthString } from '../src/utils/date'
+import {
+  parseDateString,
+  formatDateString,
+  formatMonthString,
+} from '../src/utils/date'
 
 describe('Date string parsing and formatting', () => {
   describe('parseDateString function', () => {
@@ -595,8 +599,16 @@ describe('Date string parsing and formatting', () => {
         { input: 'dec 2023', expectedMonths: 647, expectedFormat: 'Msl Y' },
         { input: 'DEC 2023', expectedMonths: 647, expectedFormat: 'Msu Y' },
         { input: 'December 2023', expectedMonths: 647, expectedFormat: 'Mf Y' },
-        { input: 'december 2023', expectedMonths: 647, expectedFormat: 'Mfl Y' },
-        { input: 'DECEMBER 2023', expectedMonths: 647, expectedFormat: 'Mfu Y' },
+        {
+          input: 'december 2023',
+          expectedMonths: 647,
+          expectedFormat: 'Mfl Y',
+        },
+        {
+          input: 'DECEMBER 2023',
+          expectedMonths: 647,
+          expectedFormat: 'Mfu Y',
+        },
       ]
 
       testCases.forEach(({ input, expectedMonths, expectedFormat }) => {
@@ -667,13 +679,33 @@ describe('Date string parsing and formatting', () => {
 
       test('should handle all 12 months correctly', () => {
         const monthNames = [
-          'January', 'February', 'March', 'April', 'May', 'June',
-          'July', 'August', 'September', 'October', 'November', 'December'
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
         ]
 
         const shortNames = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
         ]
 
         for (let i = 0; i < 12; i++) {
@@ -686,28 +718,28 @@ describe('Date string parsing and formatting', () => {
     describe('Error handling for formatMonthString', () => {
       test('should throw error for formats containing day components', () => {
         expect(() => formatMonthString(0, 'Y-M1-D1')).toThrow(
-          'Invalid format for month string: day component "D1" not allowed'
+          'Invalid format for month string: day component "D1" not allowed',
         )
         expect(() => formatMonthString(0, 'D2.M2.Y')).toThrow(
-          'Invalid format for month string: day component "D2" not allowed'
+          'Invalid format for month string: day component "D2" not allowed',
         )
         expect(() => formatMonthString(0, 'M1 D1, Y')).toThrow(
-          'Invalid format for month string: day component "D1" not allowed'
+          'Invalid format for month string: day component "D1" not allowed',
         )
       })
 
       test('should throw error for invalid format components', () => {
         expect(() => formatMonthString(0, 'Y-X-M1')).toThrow(
-          'Invalid format component: "X"'
+          'Invalid format component: "X"',
         )
         expect(() => formatMonthString(0, 'invalid format')).toThrow(
-          'Invalid format component'
+          'Invalid format component',
         )
       })
 
       test('should throw error for formats without separators', () => {
         expect(() => formatMonthString(0, 'YM1')).toThrow(
-          'Invalid format: no recognized separator found'
+          'Invalid format: no recognized separator found',
         )
       })
     })

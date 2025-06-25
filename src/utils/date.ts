@@ -192,7 +192,12 @@ function getAllPossibleComponents(component: string): DateComponent[] {
           // For M2, single-digit values (1-9) are not allowed without zero-padding
           if (value >= 1 && value <= 9 && component.length === 1) continue
           // For naturally two-digit values (10-12), prefer M1 over M2 to avoid duplicates
-          if (value >= 10 && value <= 12 && component.length === 2 && component[0] !== '0') {
+          if (
+            value >= 10 &&
+            value <= 12 &&
+            component.length === 2 &&
+            component[0] !== '0'
+          ) {
             // Skip M2 for naturally two-digit months to prefer M1
             continue
           }
@@ -232,7 +237,12 @@ function getAllPossibleComponents(component: string): DateComponent[] {
         // For D2, single-digit values (1-9) are not allowed without zero-padding
         if (value >= 1 && value <= 9 && component.length === 1) continue
         // For naturally two-digit values (10-31), prefer D1 over D2 to avoid duplicates
-        if (value >= 10 && value <= 31 && component.length === 2 && component[0] !== '0') {
+        if (
+          value >= 10 &&
+          value <= 31 &&
+          component.length === 2 &&
+          component[0] !== '0'
+        ) {
           // Skip D2 for naturally two-digit days to prefer D1
           continue
         }

@@ -98,7 +98,13 @@ The library supports conversion and detection of the following number representa
 
 ### 0.2.4
 
-- Add year-month only support
+- Add year-month only support (months property to DateInterpretation and formatMonthString function)
+
+### 0.2.5
+
+- parseDateString correctly returns all possible DateInterpretation
+- Fix nonexistent YDM
+- Add non-year-month support (days property to DateInterpretation and formatDayString function)
 
 ## To-do
 

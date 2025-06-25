@@ -88,6 +88,8 @@ export interface DateInterpretation {
   format: string
   /** Number of months after 1970-01 (only present for year-month only dates) */
   months?: number
+  /** Number of days after 1970-01-01 (only present for dates with day components) */
+  days?: number
 }
 
 /**
@@ -456,6 +458,13 @@ export function parseDateString(dateStr: string): ParseDateResult {
       // Add months property if this is a year-month only date (no day)
       if (!dayComp) {
         interpretation.months = (year - 1970) * 12 + (month - 1)
+      } else {
+        // Add days property if this is NOT a year-month only date (has day)
+        const baseDate = new Date(1970, 0, 1) // Jan 1, 1970
+        const currentDate = new Date(year, month - 1, day)
+        interpretation.days = Math.floor(
+          (currentDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24),
+        )
       }
 
       // Avoid duplicates (same format and timestamp)
@@ -568,6 +577,91 @@ export function formatDateString(timestamp: number, format: string): string {
   } else {
     return resultParts.join(separator)
   }
+}
+
+/**
+ * Formats a day number (days since 1970-01-01) according to the specified format string.
+ * This function only works with date formats that include day components.
+ *
+ * @param days - Number of days since 1970-01-01 (1970-01-01 = 0, 1970-01-02 = 1, etc.)
+ * @param format - Format string for dates with day components (e.g., "Y-M1-D1", "D2.M2.Y", "Ms D1, Y")
+ * @returns Formatted date string containing year, month, and day
+ * @throws Error if the format string contains only year-month components or is invalid
+ *
+ * @example
+ * ```ts
+ * formatDayString(0, 'Y-M1-D1') // '1970-1-1'
+ * formatDayString(0, 'D2/M2/Y') // '01/01/1970'
+ * formatDayString(1, 'Y-M2-D2') // '1970-01-02'
+ * formatDayString(31, 'D1.M1.Y') // '1.2.1970'
+ * formatDayString(358, 'Ms D1, Y') // 'Dec 25, 1970'
+ * formatDayString(19723, 'Mf D1, Y') // 'December 25, 2023'
+ * ```
+ */
+export function formatDayString(days: number, format: string): string {
+  // Convert days to timestamp
+  const baseDate = new Date(1970, 0, 1) // Jan 1, 1970
+  const timestamp = baseDate.getTime() + days * 24 * 60 * 60 * 1000
+
+  // Validate that format contains day components
+  // Find the separator used in the format
+  let separator: string = ''
+  let formatParts: string[]
+
+  // Check for comma-space pattern first (like "Month Day, Year")
+  if (format.includes(', ')) {
+    separator = ', '
+    const commaParts = format.split(', ')
+    if (commaParts.length === 2) {
+      const spaceParts = commaParts[0].split(' ')
+      if (spaceParts.length === 2) {
+        formatParts = [spaceParts[0], spaceParts[1], commaParts[1]]
+      } else {
+        formatParts = commaParts
+      }
+    } else {
+      formatParts = [format] // Fallback
+    }
+  } else if (format.includes(' ')) {
+    // Check for space separator (like "Month Day")
+    separator = ' '
+    formatParts = format.split(' ')
+  } else {
+    // Try other separators
+    for (const sep of SEPARATORS) {
+      if (sep !== ', ' && format.includes(sep)) {
+        separator = sep
+        break
+      }
+    }
+
+    if (!separator) {
+      throw new Error(
+        `Invalid format: no recognized separator found in "${format}"`,
+      )
+    }
+
+    formatParts = format.split(separator)
+  }
+
+  // Validate that format contains day components
+  let hasDayComponent = false
+  for (const part of formatParts) {
+    const trimmedPart = part.trim()
+    if (trimmedPart.startsWith('D')) {
+      hasDayComponent = true
+      break
+    }
+  }
+
+  if (!hasDayComponent) {
+    throw new Error(
+      `Invalid format for day string: format "${format}" must contain day component (D1 or D2)`,
+    )
+  }
+
+  // Use formatDateString to do the actual formatting (it will handle invalid format components)
+  return formatDateString(timestamp, format)
 }
 
 /**

@@ -1,5 +1,7 @@
 import { expect, test, describe } from 'bun:test'
 import { modNoZero, toBasicRange, numeralLength } from '../src/utils/circular'
+import { NumType } from '../src/utils/types'
+import { convertTo } from '../src/utils/converters'
 
 describe('modNoZero function', () => {
   describe('Basic modular arithmetic', () => {
@@ -135,19 +137,8 @@ describe('toBasicRange function', () => {
 
   describe('All numeral types', () => {
     test('should work with all defined numeral types', () => {
-      const typesToTest = [
-        'latin_letter',
-        'greek_letter',
-        'month_name',
-        'day_of_week',
-        'roman',
-        'chinese_heavenly_stem',
-        'chinese_earthly_branch',
-        'chinese_solar_term',
-        'cyrillic_letter',
-        'astrological_sign',
-        'nato_phonetic',
-      ] as const
+      // eslint-disable-next-line compat/compat
+      const typesToTest = Object.keys(numeralLength) as NumType[]
 
       typesToTest.forEach((numType) => {
         const length = numeralLength[numType]!
@@ -257,6 +248,136 @@ describe('toBasicRange function', () => {
       // Greek alphabet (24 letters)
       expect(toBasicRange(25, 'greek_letter')).toBe(1) // α after ω
       expect(toBasicRange(48, 'greek_letter')).toBe(24) // ω of second cycle
+    })
+  })
+})
+
+describe('convertTo function', () => {
+  describe('Can handle out-of-range circular numerals', () => {
+    // eslint-disable-next-line compat/compat
+    for (const numType of Object.keys(numeralLength) as NumType[]) {
+      test(`convertTo can handle out-of-range for ${numType}`, () => {
+        const len = numeralLength[numType]!
+        expect(convertTo(len + 2, { type: numType })).toBe(
+          convertTo(2, { type: numType }),
+        )
+        expect(convertTo(len + 1, { type: numType })).toBe(
+          convertTo(1, { type: numType }),
+        )
+        expect(convertTo(len, { type: numType })).toBe(
+          convertTo(0, { type: numType }),
+        )
+        expect(convertTo(len - 1, { type: numType })).toBe(
+          convertTo(-1, { type: numType }),
+        )
+        expect(convertTo(len - 2, { type: numType })).toBe(
+          convertTo(-2, { type: numType }),
+        )
+      })
+    }
+  })
+
+  describe('Circular wrapping examples', () => {
+    test('Latin letters wrap around correctly', () => {
+      // 27th letter wraps to 1st (a)
+      expect(convertTo(27, { type: 'latin_letter' })).toBe('a')
+      expect(convertTo(27, { type: 'latin_letter', case: 'upper' })).toBe('A')
+
+      // 52nd letter wraps to 26th (z)
+      expect(convertTo(52, { type: 'latin_letter' })).toBe('z')
+      expect(convertTo(52, { type: 'latin_letter', case: 'upper' })).toBe('Z')
+
+      // Negative numbers wrap backwards
+      expect(convertTo(-1, { type: 'latin_letter' })).toBe('y')
+      expect(convertTo(0, { type: 'latin_letter' })).toBe('z')
+    })
+
+    test('Month names wrap around correctly', () => {
+      // 13th month wraps to 1st (January)
+      expect(convertTo(13, { type: 'month_name' })).toBe('January')
+      expect(convertTo(13, { type: 'month_name', format: 'short' })).toBe('Jan')
+
+      // 24th month wraps to 12th (December)
+      expect(convertTo(24, { type: 'month_name' })).toBe('December')
+      expect(convertTo(24, { type: 'month_name', format: 'short' })).toBe('Dec')
+
+      // Negative numbers wrap backwards
+      expect(convertTo(-1, { type: 'month_name' })).toBe('November')
+      expect(convertTo(0, { type: 'month_name' })).toBe('December')
+    })
+
+    test('Astrological signs wrap around correctly', () => {
+      // 13th sign wraps to 1st (Aries)
+      expect(convertTo(13, { type: 'astrological_sign' })).toBe('Aries')
+      expect(convertTo(13, { type: 'astrological_sign', case: 'lower' })).toBe(
+        'aries',
+      )
+
+      // 25th sign wraps to 1st (Aries)
+      expect(convertTo(25, { type: 'astrological_sign' })).toBe('Aries')
+
+      // 24th sign wraps to 12th (Pisces)
+      expect(convertTo(24, { type: 'astrological_sign' })).toBe('Pisces')
+    })
+
+    test('Day of week wraps around correctly (0-based indexing)', () => {
+      // 7th day wraps to 0th (Sunday)
+      expect(convertTo(7, { type: 'day_of_week' })).toBe('Sunday')
+      expect(convertTo(7, { type: 'day_of_week', format: 'short' })).toBe('Sun')
+
+      // 14th day wraps to 0th (Sunday)
+      expect(convertTo(14, { type: 'day_of_week' })).toBe('Sunday')
+
+      // 13th day wraps to 6th (Saturday)
+      expect(convertTo(13, { type: 'day_of_week' })).toBe('Saturday')
+
+      // Negative numbers wrap backwards
+      expect(convertTo(-1, { type: 'day_of_week' })).toBe('Saturday')
+      expect(convertTo(-7, { type: 'day_of_week' })).toBe('Sunday')
+    })
+
+    test('Chinese zodiac elements wrap around correctly', () => {
+      // Heavenly stems (10 elements)
+      expect(convertTo(11, { type: 'chinese_heavenly_stem' })).toBe('甲') // wraps to 1st
+      expect(convertTo(20, { type: 'chinese_heavenly_stem' })).toBe('癸') // wraps to 10th
+
+      // Earthly branches (12 elements)
+      expect(convertTo(13, { type: 'chinese_earthly_branch' })).toBe('子') // wraps to 1st
+      expect(convertTo(24, { type: 'chinese_earthly_branch' })).toBe('亥') // wraps to 12th
+    })
+
+    test('Roman numerals do not wrap for invalid values', () => {
+      // Roman numerals should still throw errors for 0 and negative numbers
+      expect(() => convertTo(0, { type: 'roman' })).toThrow(
+        'Input must be a positive integer between 1 and 3999',
+      )
+      expect(() => convertTo(-1, { type: 'roman' })).toThrow(
+        'Input must be a positive integer between 1 and 3999',
+      )
+      expect(() => convertTo(4000, { type: 'roman' })).toThrow(
+        'Input must be a positive integer between 1 and 3999',
+      )
+      expect(() => convertTo(7998, { type: 'roman' })).toThrow(
+        'Input must be a positive integer between 1 and 3999',
+      )
+    })
+  })
+
+  describe('Non-circular types should not wrap', () => {
+    test('Decimal numbers do not wrap', () => {
+      expect(convertTo(123, { type: 'decimal' })).toBe('123')
+      expect(convertTo(-456, { type: 'decimal' })).toBe('-456')
+      expect(convertTo(0, { type: 'decimal' })).toBe('0')
+    })
+
+    test('Binary numbers do not wrap', () => {
+      expect(convertTo(8, { type: 'binary' })).toBe('1000')
+      expect(convertTo(255, { type: 'binary' })).toBe('11111111')
+    })
+
+    test('English words do not wrap', () => {
+      expect(convertTo(100, { type: 'english_words' })).toBe('one hundred')
+      expect(convertTo(1000, { type: 'english_words' })).toBe('one thousand')
     })
   })
 })

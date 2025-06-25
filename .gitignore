@@ -1,6 +1,5 @@
 docs/
 /test.ts
-draft.md
 *.tgz
 
 # Node modules

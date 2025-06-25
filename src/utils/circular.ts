@@ -19,7 +19,7 @@ export const numeralLength: Partial<Record<NumType, number>> = {
   greek_letter: 24,
   month_name: 12,
   day_of_week: 7,
-  roman: 3999,
+  // roman: 3999, // Length is 3999 but roman numerals don't support 0 or negative numbers, don't wrap
   chinese_heavenly_stem: 10,
   chinese_earthly_branch: 12,
   chinese_solar_term: 24,

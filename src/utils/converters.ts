@@ -28,6 +28,7 @@ import {
 import { toMonth, fromMonth, toDayOfWeek, fromDayOfWeek } from '../datetime'
 import { toBin, fromBin, toOct, fromOct, toHex, fromHex } from '../bases'
 import { NumType, TypeInfo } from './types'
+import { numeralLength, toBasicRange } from './circular'
 
 /**
  * Applies case transformation to a string based on the specified case type
@@ -267,10 +268,15 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * Supports precise control over output formatting through case and format properties.
  * Case options: 'lower', 'upper', 'sentence' (first letter capitalized), 'title' (each word capitalized).
  * Format options: 'short' or 'long' for dates/months.
+ *
  * @param num - The input number to convert (e.g., 4, 21, 123)
  * @param typeInfo - The target type information including type, case, and format specifications
  * @returns The converted string formatted according to the specified case and format
  * @throws Error if the type is not supported or conversion fails
+ *
+ * @remarks For circular numeral types (latin_letter, greek_letter, month_name, astrological_sign, etc.),
+ * automatically handles out-of-range numbers by wrapping them using circular arithmetic.
+ *
  * @example
  * ```ts
  * convertTo(4, { type: 'roman', case: 'upper' }) // returns 'IV'
@@ -278,11 +284,15 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * convertTo(21, { type: 'english_words', case: 'title' }) // returns 'Twenty-One'
  * convertTo(21, { type: 'english_words', case: 'upper' }) // returns 'TWENTY-ONE'
  * convertTo(1, { type: 'latin_letter', case: 'lower' }) // returns 'a'
+ * convertTo(27, { type: 'latin_letter', case: 'lower' }) // returns 'a' (wraps around)
  * convertTo(255, { type: 'hexadecimal', case: 'upper' }) // returns 'FF'
  * convertTo(1, { type: 'month_name', case: 'sentence', format: 'long' }) // returns 'January'
  * convertTo(1, { type: 'month_name', case: 'upper', format: 'short' }) // returns 'JAN'
+ * convertTo(13, { type: 'month_name', case: 'upper', format: 'short' }) // returns 'JAN' (wraps to January)
  * convertTo(123, { type: 'chinese_words' }) // returns '一百二十三'
  * convertTo(1, { type: 'astrological_sign', case: 'lower' }) // returns 'aries'
+ * convertTo(13, { type: 'astrological_sign', case: 'lower' }) // returns 'aries' (wraps around)
+ * convertTo(7, { type: 'day_of_week', case: 'lower' }) // returns 'sunday' (wraps around)
  * ```
  */
 export function convertTo(num: number, typeInfo: TypeInfo): string {
@@ -292,7 +302,28 @@ export function convertTo(num: number, typeInfo: TypeInfo): string {
   }
 
   try {
-    return toFn(num, typeInfo)
+    // Check if this is a circular numeral type and handle out-of-range values
+    if (numeralLength[typeInfo.type] !== undefined) {
+      // Special cases for types that have specific requirements
+      if (typeInfo.type === 'day_of_week') {
+        // Day of week uses 0-based indexing (0-6), need special handling
+        if (num >= 0 && num <= 6) {
+          // Already in valid range
+          return toFn(num, typeInfo)
+        } else {
+          // Wrap using modular arithmetic for 0-6 range
+          const wrappedNum = ((num % 7) + 7) % 7
+          return toFn(wrappedNum, typeInfo)
+        }
+      } else {
+        // For other circular numerals, wrap the number to the valid range
+        const wrappedNum = toBasicRange(num, typeInfo.type)
+        return toFn(wrappedNum, typeInfo)
+      }
+    } else {
+      // For non-circular types, use the number as-is
+      return toFn(num, typeInfo)
+    }
   } catch (error) {
     throw new Error(
       `Failed to convert ${num} to type "${typeInfo.type}": ${error instanceof Error ? error.message : String(error)}`,

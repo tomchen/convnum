@@ -87,6 +87,15 @@ The library supports conversion and detection of the following number representa
 - Base prefix (e.g. "0x01", "0b01", "0o01")
 - Circular support
 
+### 0.2.1
+
+- Simplify ParseDateResult interface
+
+### 0.2.2
+
+- Out-of-range circular support for all types in `convertTo`
+- Export version
+
 ## To-do
 
 - Loose matching for French and English words

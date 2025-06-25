@@ -16,3 +16,9 @@ export * from './utils/converters'
 export * from './utils/types'
 export * from './utils/circular'
 export * from './utils/date'
+
+/**
+ * The version of the package
+ */
+export const version =
+  typeof __VERSION__ === 'string' ? __VERSION__ : '0.0.0-dev'

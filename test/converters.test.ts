@@ -194,6 +194,8 @@ describe('Converter Functions', () => {
         'Cannot convert to unknown type',
       )
     })
+
+    // Circular functionality is tested in circular.test.ts
   })
 
   describe('Round-trip conversions', () => {

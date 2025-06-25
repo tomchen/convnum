@@ -25,7 +25,6 @@ Thumbs.db
 *.swp
 
 # TypeScript
-*.d.ts
 *.d.ts.map
 tsconfig.tsbuildinfo
 

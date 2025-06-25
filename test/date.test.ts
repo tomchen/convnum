@@ -8,218 +8,416 @@ import {
 describe('Date string parsing and formatting', () => {
   describe('parseDateString function', () => {
     describe('Y-M-D format variants', () => {
-      test('should parse Y-M1-D1 format with dash separator', () => {
+      test('should parse Y-M-D format with all format combinations', () => {
         const result = parseDateString('2023-12-25')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y-M1-D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+        // Check all combinations exist with same timestamp
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y-M2-D2')
+        expect(formats).toContain('Y-M2-D1')
+        expect(formats).toContain('Y-M1-D2')
+        expect(formats).toContain('Y-M1-D1')
+
+        // All should have same timestamp (same date)
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
-      test('should parse ambiguous Y-M2-D2 format with multiple interpretations', () => {
+      test('should parse Y-M-D format without position ambiguity (year first)', () => {
         const result = parseDateString('2023-01-05')
-        expect(result).toHaveLength(2)
+        // No Y-D-M ambiguity when year is first - only Y-M-D is valid
+        // But should have format combinations for 01 and 05 (M1/M2 × D1/D2)
+        expect(result).toHaveLength(4)
 
-        // Should detect both possible interpretations
         const formats = result.map((i) => i.format)
-        expect(formats).toContain('Y-M2-D2') // January 5th
-        expect(formats).toContain('Y-D2-M2') // May 1st
+        expect(formats).toContain('Y-M2-D2')
+        expect(formats).toContain('Y-M2-D1')
+        expect(formats).toContain('Y-M1-D2')
+        expect(formats).toContain('Y-M1-D1')
 
-        // Check timestamps correspond to different dates
+        // All should have same timestamp (January 5th, 2023)
         const timestamps = result.map((i) => i.timestamp)
-        expect(timestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5
-        expect(timestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 5))
       })
 
-      test('should parse Y-M1-D1 format with dot separator', () => {
+      test('should parse Y-M-D format with dot separator (all combinations)', () => {
         const result = parseDateString('2023.12.25')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y.M1.D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y.M2.D2')
+        expect(formats).toContain('Y.M2.D1')
+        expect(formats).toContain('Y.M1.D2')
+        expect(formats).toContain('Y.M1.D1')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
-      test('should parse Y-M1-D1 format with slash separator', () => {
+      test('should parse Y-M-D format with slash separator (all combinations)', () => {
         const result = parseDateString('2023/12/25')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y/M1/D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y/M2/D2')
+        expect(formats).toContain('Y/M2/D1')
+        expect(formats).toContain('Y/M1/D2')
+        expect(formats).toContain('Y/M1/D1')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
-      test('should parse Y-M1-D1 format with comma separator', () => {
+      test('should parse Y-M-D format with comma separator (all combinations)', () => {
         const result = parseDateString('2023,12,25')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y,M1,D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y,M2,D2')
+        expect(formats).toContain('Y,M2,D1')
+        expect(formats).toContain('Y,M1,D2')
+        expect(formats).toContain('Y,M1,D1')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
     })
 
     describe('D-M-Y format variants', () => {
-      test('should parse D1-M1-Y format', () => {
+      test('should parse D-M-Y format (all combinations)', () => {
         const result = parseDateString('25-12-2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('D1-M1-Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All D1/D2 × M1/M2 combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('D2-M2-Y')
+        expect(formats).toContain('D2-M1-Y')
+        expect(formats).toContain('D1-M2-Y')
+        expect(formats).toContain('D1-M1-Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
-      test('should parse ambiguous D2.M2.Y format with multiple interpretations', () => {
+      test('should parse ambiguous date with positional and format combinations', () => {
         const result = parseDateString('05.01.2023')
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(8) // 2 positional × 4 format combinations
 
-        const formats = result.map((i) => i.format)
-        expect(formats).toContain('M2.D2.Y') // May 1st
-        expect(formats).toContain('D2.M2.Y') // January 5th
+                // Check that we have exactly two different timestamps (dates)
+        const timestamps = result.map(r => r.timestamp)
+        const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+        expect(uniqueTimestamps).toHaveLength(2) // Two different dates
 
-        const timestamps = result.map((i) => i.timestamp)
-        expect(timestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1
-        expect(timestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5
+        expect(uniqueTimestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1st (M-D interpretation)
+        expect(uniqueTimestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5th (D-M interpretation)
+
+        // Each timestamp should have 4 format combinations
+        uniqueTimestamps.forEach(timestamp => {
+          const groupForTimestamp = result.filter(r => r.timestamp === timestamp)
+          expect(groupForTimestamp).toHaveLength(4)
+        })
       })
 
-      test('should parse unambiguous D1/M1/Y format', () => {
+      test('should parse unambiguous D/M/Y format (31 cannot be month)', () => {
         const result = parseDateString('31/1/2023')
-        expect(result).toHaveLength(1) // Only one interpretation (31 can't be month)
-        expect(result[0].format).toBe('D1/M1/Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 0, 31))
+        expect(result).toHaveLength(2) // Only D-M order valid, but 2 format combinations for day
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('D2/M1/Y')
+        expect(formats).toContain('D1/M1/Y')
+        // Note: 31 matches both D1 and D2 patterns, 1 only matches M1 pattern (not M2 since it's not zero-padded)
+
+        // All should have same timestamp (January 31st, 2023)
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 31))
       })
     })
 
     describe('M-D-Y format variants', () => {
-      test('should parse unambiguous M1-D1-Y format', () => {
+      test('should parse unambiguous M-D-Y format (25 cannot be month)', () => {
         const result = parseDateString('12-25-2023')
-        expect(result).toHaveLength(1) // Only one interpretation (25 can't be month)
-        expect(result[0].format).toBe('M1-D1-Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // Only M-D order valid, but all format combinations available
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('M2-D2-Y')
+        expect(formats).toContain('M2-D1-Y')
+        expect(formats).toContain('M1-D2-Y')
+        expect(formats).toContain('M1-D1-Y')
+
+        // All should have same timestamp (December 25th, 2023)
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
-      test('should parse ambiguous M2/D2/Y format with multiple interpretations', () => {
+      test('should parse ambiguous date with positional and format combinations', () => {
         const result = parseDateString('01/05/2023')
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(8) // 2 positional × 4 format combinations
 
-        const formats = result.map((i) => i.format)
-        expect(formats).toContain('M2/D2/Y') // January 5th
-        expect(formats).toContain('D2/M2/Y') // May 1st
+        // Check that we have exactly two different timestamps (dates)
+        const timestamps = result.map(r => r.timestamp)
+        const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+        expect(uniqueTimestamps).toHaveLength(2) // Two different dates
 
-        const timestamps = result.map((i) => i.timestamp)
-        expect(timestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5
-        expect(timestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1
+        expect(uniqueTimestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5th (M-D interpretation)
+        expect(uniqueTimestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1st (D-M interpretation)
+
+        // Each timestamp should have 4 format combinations
+        uniqueTimestamps.forEach(timestamp => {
+          const groupForTimestamp = result.filter(r => r.timestamp === timestamp)
+          expect(groupForTimestamp).toHaveLength(4)
+        })
       })
     })
 
     describe('Y-M format (no day)', () => {
-      test('should parse Y-M1 format and default day to 1', () => {
+      test('should parse Y-M format and default day to 1', () => {
         const result = parseDateString('2023-12')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y-M1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 1))
+        expect(result).toHaveLength(2) // Both M1 and M2 formats
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y-M2')
+        expect(formats).toContain('Y-M1')
+
+        // All should have same timestamp and months property
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 1))
+
+        // Should have months property
+        result.forEach(interp => {
+          expect(interp.months).toBe(647) // (2023-1970)*12 + (12-1)
+        })
       })
 
-      test('should parse Y.M2 format and default day to 1', () => {
+      test('should parse Y.M format and default day to 1', () => {
         const result = parseDateString('2023.01')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y.M2')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 0, 1))
+        expect(result).toHaveLength(2) // Both M1 and M2 formats (01 matches both)
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y.M2')
+        expect(formats).toContain('Y.M1')
+
+        // All should have same timestamp and months property
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 1))
+
+        // Should have months property
+        result.forEach(interp => {
+          expect(interp.months).toBe(636) // (2023-1970)*12 + (1-1)
+        })
       })
     })
 
     describe('M-Y format (no day)', () => {
-      test('should parse M1-Y format and default day to 1', () => {
+      test('should parse M-Y format and default day to 1', () => {
         const result = parseDateString('12-2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('M1-Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 1))
+        expect(result).toHaveLength(2) // Both M1 and M2 formats
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('M2-Y')
+        expect(formats).toContain('M1-Y')
+
+        // All should have same timestamp and months property
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 1))
+
+        // Should have months property
+        result.forEach(interp => {
+          expect(interp.months).toBe(647) // (2023-1970)*12 + (12-1)
+        })
       })
 
-      test('should parse M2/Y format and default day to 1', () => {
+      test('should parse M/Y format and default day to 1', () => {
         const result = parseDateString('01/2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('M2/Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 0, 1))
+        expect(result).toHaveLength(2) // Both M1 and M2 formats (01 matches both)
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('M2/Y')
+        expect(formats).toContain('M1/Y')
+
+        // All should have same timestamp and months property
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 1))
+
+        // Should have months property
+        result.forEach(interp => {
+          expect(interp.months).toBe(636) // (2023-1970)*12 + (1-1)
+        })
       })
     })
 
     describe('M-D format (no year)', () => {
-      test('should parse unambiguous M1-D1 format and default year to 1970', () => {
+      test('should parse unambiguous M-D format and default year to 1970 (25 cannot be month)', () => {
         const result = parseDateString('12-25')
-        expect(result).toHaveLength(1) // Only one interpretation (25 can't be month)
-        expect(result[0].format).toBe('M1-D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(1970, 11, 25))
+        expect(result).toHaveLength(4) // Only M-D order valid, but all format combinations available
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('M2-D2')
+        expect(formats).toContain('M2-D1')
+        expect(formats).toContain('M1-D2')
+        expect(formats).toContain('M1-D1')
+
+        // All should have same timestamp (December 25th, 1970)
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(1970, 11, 25))
       })
 
-      test('should parse ambiguous M2.D2 format and default year to 1970', () => {
+      test('should parse ambiguous M/D format with positional and format combinations', () => {
         const result = parseDateString('01.05')
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(8) // 2 positional × 4 format combinations
 
-        const formats = result.map((i) => i.format)
-        expect(formats).toContain('M2.D2') // January 5th
-        expect(formats).toContain('D2.M2') // May 1st
+        // Check that we have exactly two different timestamps (dates)
+        const timestamps = result.map(r => r.timestamp)
+        const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+        expect(uniqueTimestamps).toHaveLength(2) // Two different dates
 
-        const timestamps = result.map((i) => i.timestamp)
-        expect(timestamps).toContain(new Date(1970, 0, 5).getTime()) // Jan 5
-        expect(timestamps).toContain(new Date(1970, 4, 1).getTime()) // May 1
+        expect(uniqueTimestamps).toContain(new Date(1970, 0, 5).getTime()) // Jan 5th (M-D interpretation)
+        expect(uniqueTimestamps).toContain(new Date(1970, 4, 1).getTime()) // May 1st (D-M interpretation)
+
+        // Each timestamp should have 4 format combinations
+        uniqueTimestamps.forEach(timestamp => {
+          const groupForTimestamp = result.filter(r => r.timestamp === timestamp)
+          expect(groupForTimestamp).toHaveLength(4)
+        })
       })
     })
 
     describe('D-M format (no year)', () => {
-      test('should parse unambiguous D1-M1 format and default year to 1970', () => {
+      test('should parse unambiguous D-M format and default year to 1970 (25 cannot be month)', () => {
         const result = parseDateString('25-12')
-        expect(result).toHaveLength(1) // Only one interpretation (25 can't be month)
-        expect(result[0].format).toBe('D1-M1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(1970, 11, 25))
+        expect(result).toHaveLength(4) // Only D-M order valid, but all format combinations available
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('D2-M2')
+        expect(formats).toContain('D2-M1')
+        expect(formats).toContain('D1-M2')
+        expect(formats).toContain('D1-M1')
+
+        // All should have same timestamp (December 25th, 1970)
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(1970, 11, 25))
       })
 
-      test('should parse ambiguous D2/M2 format and default year to 1970', () => {
+      test('should parse ambiguous D/M format with positional and format combinations', () => {
         const result = parseDateString('05/01')
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(8) // 2 positional × 4 format combinations
 
-        const formats = result.map((i) => i.format)
-        expect(formats).toContain('M2/D2') // January 5th
-        expect(formats).toContain('D2/M2') // May 1st
+        // Check that we have exactly two different timestamps (dates)
+        const timestamps = result.map(r => r.timestamp)
+        const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+        expect(uniqueTimestamps).toHaveLength(2) // Two different dates
 
-        const timestamps = result.map((i) => i.timestamp)
-        expect(timestamps).toContain(new Date(1970, 0, 5).getTime()) // Jan 5
-        expect(timestamps).toContain(new Date(1970, 4, 1).getTime()) // May 1
+        expect(uniqueTimestamps).toContain(new Date(1970, 0, 5).getTime()) // Jan 5th (M-D interpretation)
+        expect(uniqueTimestamps).toContain(new Date(1970, 4, 1).getTime()) // May 1st (D-M interpretation)
+
+        // Each timestamp should have 4 format combinations
+        uniqueTimestamps.forEach(timestamp => {
+          const groupForTimestamp = result.filter(r => r.timestamp === timestamp)
+          expect(groupForTimestamp).toHaveLength(4)
+        })
       })
     })
 
     describe('Named month formats', () => {
       test('should parse full month name with title case', () => {
         const result = parseDateString('December 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Mf D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Mf D2, Y')
+        expect(formats).toContain('Mf D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse full month name with lowercase', () => {
         const result = parseDateString('december 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Mfl D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Mfl D2, Y')
+        expect(formats).toContain('Mfl D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse full month name with uppercase', () => {
         const result = parseDateString('DECEMBER 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Mfu D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Mfu D2, Y')
+        expect(formats).toContain('Mfu D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse short month name with title case', () => {
         const result = parseDateString('Dec 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Ms D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Ms D2, Y')
+        expect(formats).toContain('Ms D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse short month name with lowercase', () => {
         const result = parseDateString('dec 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Msl D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Msl D2, Y')
+        expect(formats).toContain('Msl D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse short month name with uppercase', () => {
         const result = parseDateString('DEC 25, 2023')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Msu D1, Y')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(2) // D1 and D2 format combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Msu D2, Y')
+        expect(formats).toContain('Msu D1, Y')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should parse Y-Month format', () => {
@@ -275,9 +473,18 @@ describe('Date string parsing and formatting', () => {
     describe('Input normalization', () => {
       test('should handle whitespace trimming', () => {
         const result = parseDateString('  2023-12-25  ')
-        expect(result).toHaveLength(1)
-        expect(result[0].format).toBe('Y-M1-D1')
-        expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+        const formats = result.map(r => r.format)
+        expect(formats).toContain('Y-M2-D2')
+        expect(formats).toContain('Y-M2-D1')
+        expect(formats).toContain('Y-M1-D2')
+        expect(formats).toContain('Y-M1-D1')
+
+        // All should have same timestamp
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
       })
 
       test('should reject completely invalid input', () => {
@@ -394,48 +601,86 @@ describe('Date string parsing and formatting', () => {
 
   describe('Round-trip consistency', () => {
     describe('Simple round-trip tests', () => {
-      const testCases = [
-        { input: '2023-12-25', expectedFormat: 'Y-M1-D1' },
-        { input: '25.12.2023', expectedFormat: 'D1.M1.Y' },
-        { input: '12/25/2023', expectedFormat: 'M1/D1/Y' },
-        { input: 'December 25, 2023', expectedFormat: 'Mf D1, Y' },
-        { input: '2023-12', expectedFormat: 'Y-M1' },
-        { input: '12-25', expectedFormat: 'M1-D1' },
-      ]
+      test('should round-trip unambiguous dates correctly', () => {
+        // Test cases that should have only one positional interpretation
+        const testCases = [
+          { input: '2023-01-31', expectedTimestamp: new Date(2023, 0, 31).getTime() }, // Y-M-D only
+          { input: '31.01.2023', expectedTimestamp: new Date(2023, 0, 31).getTime() }, // D-M-Y only (31 can't be month)
+          { input: '01/31/2023', expectedTimestamp: new Date(2023, 0, 31).getTime() }, // M-D-Y only (31 can't be month)
+          { input: 'December 05, 2023', expectedTimestamp: new Date(2023, 11, 5).getTime() }, // Named month, unambiguous
+        ]
 
-      test.each(testCases)(
-        'should round-trip $input correctly',
-        ({ input, expectedFormat }) => {
+        testCases.forEach(({ input, expectedTimestamp }) => {
           const parsed = parseDateString(input)
-          expect(parsed.length).toBe(1) // Should have only one interpretation
-          const interpretation = parsed[0]
-          expect(interpretation.format).toBe(expectedFormat)
 
-          const formatted = formatDateString(
-            interpretation.timestamp,
-            interpretation.format,
-          )
-          expect(formatted).toBe(input)
-        },
-      )
+          // All interpretations should have the same timestamp (same date)
+          const timestamps = parsed.map(r => r.timestamp)
+          expect(timestamps.every(t => t === expectedTimestamp)).toBe(true)
+
+          // Each interpretation should round-trip correctly
+          parsed.forEach(interpretation => {
+            const formatted = formatDateString(interpretation.timestamp, interpretation.format)
+            const reparsed = parseDateString(formatted)
+
+            // The reparsed result should contain the original interpretation
+            const matchingInterp = reparsed.find(i =>
+              i.format === interpretation.format && i.timestamp === interpretation.timestamp
+            )
+            expect(matchingInterp).toBeDefined()
+          })
+        })
+      })
+
+      test('should round-trip year-month only dates correctly', () => {
+        const testCases = [
+          { input: '2023-01', expectedTimestamp: new Date(2023, 0, 1).getTime(), expectedMonths: 636 },
+          { input: '01-31', expectedTimestamp: new Date(1970, 0, 31).getTime() }, // M-D format, no months property
+        ]
+
+        testCases.forEach(({ input, expectedTimestamp, expectedMonths }) => {
+          const parsed = parseDateString(input)
+
+          // All interpretations should have the same timestamp
+          const timestamps = parsed.map(r => r.timestamp)
+          expect(timestamps.every(t => t === expectedTimestamp)).toBe(true)
+
+          // Check months property if expected
+          if (expectedMonths !== undefined) {
+            parsed.forEach(interp => {
+              expect(interp.months).toBe(expectedMonths)
+            })
+          }
+
+          // Each interpretation should round-trip correctly
+          parsed.forEach(interpretation => {
+            const formatted = formatDateString(interpretation.timestamp, interpretation.format)
+            const reparsed = parseDateString(formatted)
+
+            const matchingInterp = reparsed.find(i =>
+              i.format === interpretation.format && i.timestamp === interpretation.timestamp
+            )
+            expect(matchingInterp).toBeDefined()
+          })
+        })
+      })
     })
 
     describe('Complex round-trip tests', () => {
       test('should handle ambiguous inputs with multiple interpretations', () => {
         const input = '01/05/2023'
         const parsed = parseDateString(input)
-        expect(parsed.length).toBe(2)
+        expect(parsed.length).toBe(8) // 2 positional × 4 format combinations
 
-        const formats = parsed.map((i) => i.format)
-        const timestamps = parsed.map((i) => i.timestamp)
+        // Check that we have exactly two different timestamps (dates)
+        const timestamps = parsed.map(r => r.timestamp)
+        const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+        expect(uniqueTimestamps).toHaveLength(2) // Two different dates
 
-        expect(formats).toContain('M2/D2/Y') // January 5th
-        expect(formats).toContain('D2/M2/Y') // May 1st
-        expect(timestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5
-        expect(timestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1
+        expect(uniqueTimestamps).toContain(new Date(2023, 0, 5).getTime()) // Jan 5th (M-D interpretation)
+        expect(uniqueTimestamps).toContain(new Date(2023, 4, 1).getTime()) // May 1st (D-M interpretation)
 
         // Each interpretation should round-trip correctly
-        for (const interpretation of parsed) {
+        parsed.forEach(interpretation => {
           const formatted = formatDateString(
             interpretation.timestamp,
             interpretation.format,
@@ -447,7 +692,7 @@ describe('Date string parsing and formatting', () => {
               i.timestamp === interpretation.timestamp,
           )
           expect(matchingInterp).toBeDefined()
-        }
+        })
       })
     })
 
@@ -491,39 +736,36 @@ describe('Date string parsing and formatting', () => {
         expect(hasExpectedMonth).toBe(true)
       })
 
-      test('should preserve ambiguity through round-trips', () => {
+      test('should handle Y-M-D format with multiple format combinations', () => {
         const result = parseDateString('2023-01-05')
-        expect(result).toHaveLength(2)
+        expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations, no positional ambiguity
 
-        const formats = result.map((i) => i.format)
-        expect(formats).toContain('Y-M2-D2') // January 5th
-        expect(formats).toContain('Y-D2-M2') // May 1st
+        // All should have same timestamp (January 5th, 2023) - no Y-D-M ambiguity when year is first
+        const timestamps = result.map(r => r.timestamp)
+        expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+        expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 5))
 
-        const jan5Interp = result.find(
-          (i) => i.timestamp === new Date(2023, 0, 5).getTime(),
-        )
-        const may1Interp = result.find(
-          (i) => i.timestamp === new Date(2023, 4, 1).getTime(),
-        )
+        // Should have all format combinations
+        const formats = result.map(i => i.format)
+        expect(formats).toContain('Y-M2-D2')
+        expect(formats).toContain('Y-M2-D1')
+        expect(formats).toContain('Y-M1-D2')
+        expect(formats).toContain('Y-M1-D1')
 
-        expect(jan5Interp).toBeDefined()
-        expect(may1Interp).toBeDefined()
-
-        if (jan5Interp) {
+        // Each interpretation should round-trip correctly
+        result.forEach(interpretation => {
           const formatted = formatDateString(
-            jan5Interp.timestamp,
-            jan5Interp.format,
+            interpretation.timestamp,
+            interpretation.format,
           )
-          expect(formatted).toBe('2023-01-05')
-        }
-
-        if (may1Interp) {
-          const formatted = formatDateString(
-            may1Interp.timestamp,
-            may1Interp.format,
+          const reparsed = parseDateString(formatted)
+          const matchingInterp = reparsed.find(
+            (i) =>
+              i.format === interpretation.format &&
+              i.timestamp === interpretation.timestamp,
           )
-          expect(formatted).toBe('2023-01-05') // Y-D2-M2 format: year-day-month
-        }
+          expect(matchingInterp).toBeDefined()
+        })
       })
     })
   })
@@ -531,18 +773,30 @@ describe('Date string parsing and formatting', () => {
   describe('Months property for year-month only dates', () => {
     test('should add months property for Y-M format', () => {
       const result = parseDateString('2023-12')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('Y-M1')
-      expect(result[0].months).toBe(647) // (2023-1970)*12 + (12-1) = 53*12 + 11 = 636 + 11 = 647
-      expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 1))
+      expect(result).toHaveLength(2) // Both M1 and M2 formats
+
+      // All should have same timestamp and months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 1))
+
+      result.forEach(interp => {
+        expect(interp.months).toBe(647) // (2023-1970)*12 + (12-1) = 53*12 + 11 = 636 + 11 = 647
+      })
     })
 
     test('should add months property for M-Y format', () => {
       const result = parseDateString('01-2023')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('M2-Y')
-      expect(result[0].months).toBe(636) // (2023-1970)*12 + (1-1) = 53*12 + 0 = 636
-      expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 0, 1))
+      expect(result).toHaveLength(2) // Both M1 and M2 formats (01 matches both)
+
+      // All should have same timestamp and months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(2023, 0, 1))
+
+      result.forEach(interp => {
+        expect(interp.months).toBe(636) // (2023-1970)*12 + (1-1) = 53*12 + 0 = 636
+      })
     })
 
     test('should add months property for named month formats', () => {
@@ -563,34 +817,58 @@ describe('Date string parsing and formatting', () => {
 
     test('should NOT add months property for dates with day component', () => {
       const result = parseDateString('2023-12-25')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('Y-M1-D1')
-      expect(result[0].months).toBeUndefined()
-      expect(new Date(result[0].timestamp)).toEqual(new Date(2023, 11, 25))
+      expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+      // All should have same timestamp and no months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
+
+      result.forEach(interp => {
+        expect(interp.months).toBeUndefined()
+      })
     })
 
     test('should NOT add months property for M-D format (no year)', () => {
       const result = parseDateString('12-25')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('M1-D1')
-      expect(result[0].months).toBeUndefined()
-      expect(new Date(result[0].timestamp)).toEqual(new Date(1970, 11, 25))
+      expect(result).toHaveLength(4) // All M1/M2 × D1/D2 combinations
+
+      // All should have same timestamp and no months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(1970, 11, 25))
+
+      result.forEach(interp => {
+        expect(interp.months).toBeUndefined()
+      })
     })
 
     test('should handle edge case: 1970-01 (months = 0)', () => {
       const result = parseDateString('1970-01')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('Y-M2')
-      expect(result[0].months).toBe(0) // (1970-1970)*12 + (1-1) = 0
-      expect(new Date(result[0].timestamp)).toEqual(new Date(1970, 0, 1))
+      expect(result).toHaveLength(2) // Both M1 and M2 formats (01 matches both)
+
+      // All should have same timestamp and months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(1970, 0, 1))
+
+      result.forEach(interp => {
+        expect(interp.months).toBe(0) // (1970-1970)*12 + (1-1) = 0
+      })
     })
 
     test('should handle edge case: 1970-02 (months = 1)', () => {
       const result = parseDateString('1970-02')
-      expect(result).toHaveLength(1)
-      expect(result[0].format).toBe('Y-M2')
-      expect(result[0].months).toBe(1) // (1970-1970)*12 + (2-1) = 1
-      expect(new Date(result[0].timestamp)).toEqual(new Date(1970, 1, 1))
+      expect(result).toHaveLength(2) // Both M1 and M2 formats (02 matches both)
+
+      // All should have same timestamp and months property
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(1970, 1, 1))
+
+      result.forEach(interp => {
+        expect(interp.months).toBe(1) // (1970-1970)*12 + (2-1) = 1
+      })
     })
 
     test('should handle various month name formats with months property', () => {
@@ -763,9 +1041,11 @@ describe('Date string parsing and formatting', () => {
 
           // Parse the formatted string back
           const parsed = parseDateString(formatted)
-          expect(parsed).toHaveLength(1)
-          expect(parsed[0].format).toBe(format)
-          expect(parsed[0].months).toBe(months)
+          expect(parsed.length).toBeGreaterThan(0)
+
+          // Find the matching interpretation
+          const matchingInterp = parsed.find(i => i.format === format && i.months === months)
+          expect(matchingInterp).toBeDefined()
         })
       })
 
@@ -782,11 +1062,65 @@ describe('Date string parsing and formatting', () => {
         edgeCases.forEach(({ months, format }) => {
           const formatted = formatMonthString(months, format)
           const parsed = parseDateString(formatted)
-          expect(parsed).toHaveLength(1)
-          expect(parsed[0].months).toBe(months)
-          expect(parsed[0].format).toBe(format)
+          expect(parsed.length).toBeGreaterThan(0)
+
+          // Find the matching interpretation
+          const matchingInterp = parsed.find(i => i.format === format && i.months === months)
+          expect(matchingInterp).toBeDefined()
         })
       })
+    })
+  })
+
+  describe('Specific format combination tests', () => {
+    test('should return exact format combinations for 2023-12-25', () => {
+      const result = parseDateString('2023-12-25')
+      expect(result).toHaveLength(4)
+
+      // Check exact format combinations in expected order
+      const expectedFormats = ['Y-M2-D2', 'Y-M2-D1', 'Y-M1-D2', 'Y-M1-D1']
+      const actualFormats = result.map(r => r.format)
+
+      expectedFormats.forEach(format => {
+        expect(actualFormats).toContain(format)
+      })
+
+      // All should have same timestamp (December 25, 2023)
+      const timestamps = result.map(r => r.timestamp)
+      expect(timestamps.every(t => t === timestamps[0])).toBe(true)
+      expect(new Date(timestamps[0])).toEqual(new Date(2023, 11, 25))
+    })
+
+    test('should return exact format combinations for 12.11.2023', () => {
+      const result = parseDateString('12.11.2023')
+      expect(result).toHaveLength(8)
+
+      // Group by timestamp to verify the two interpretations
+      const timestamps = result.map(r => r.timestamp)
+      const uniqueTimestamps = timestamps.filter((ts, index) => timestamps.indexOf(ts) === index)
+      expect(uniqueTimestamps).toHaveLength(2)
+
+      // Check December 11, 2023 interpretation (M.D format - 12 = month, 11 = day)
+      const dec11Timestamp = new Date(2023, 11, 11).getTime()
+      const dec11Results = result.filter(r => r.timestamp === dec11Timestamp)
+      expect(dec11Results).toHaveLength(4)
+
+      const dec11Formats = dec11Results.map(r => r.format)
+      expect(dec11Formats).toContain('M2.D2.Y')
+      expect(dec11Formats).toContain('M2.D1.Y')
+      expect(dec11Formats).toContain('M1.D2.Y')
+      expect(dec11Formats).toContain('M1.D1.Y')
+
+      // Check November 12, 2023 interpretation (D.M format - 12 = day, 11 = month)
+      const nov12Timestamp = new Date(2023, 10, 12).getTime()
+      const nov12Results = result.filter(r => r.timestamp === nov12Timestamp)
+      expect(nov12Results).toHaveLength(4)
+
+      const nov12Formats = nov12Results.map(r => r.format)
+      expect(nov12Formats).toContain('D2.M2.Y')
+      expect(nov12Formats).toContain('D2.M1.Y')
+      expect(nov12Formats).toContain('D1.M2.Y')
+      expect(nov12Formats).toContain('D1.M1.Y')
     })
   })
 })

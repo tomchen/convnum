@@ -12,8 +12,8 @@ const MONTH_FORMATS = {
     min: 1,
     max: 12,
     requireZeroPadded: true,
-  }, // 01-12 (zero-padded)
-  M1: { pattern: /^([1-9]|1[0-2])$/, min: 1, max: 12, excludeZeroPadded: true }, // 1-12 (no padding)
+  }, // 01-12 (zero-padded format)
+  M1: { pattern: /^(0?[1-9]|1[0-2])$/, min: 1, max: 12 }, // 1-12 or 01-12 (flexible format)
   Mf: { pattern: /^([A-Z][a-z]{3,})$/ }, // January (4+ letters after capital)
   Mfl: { pattern: /^([a-z]{4,})$/ }, // january (4+ lowercase letters)
   Mfu: { pattern: /^([A-Z]{4,})$/ }, // JANUARY (4+ uppercase letters)
@@ -31,13 +31,12 @@ const DAY_FORMATS = {
     min: 1,
     max: 31,
     requireZeroPadded: true,
-  }, // 01-31 (zero-padded only)
+  }, // 01-31 (zero-padded format)
   D1: {
-    pattern: /^([1-9]|1[0-9]|2[0-9]|3[01])$/,
+    pattern: /^(0?[1-9]|[1-2][0-9]|3[01])$/,
     min: 1,
     max: 31,
-    excludeZeroPadded: true,
-  }, // 1-31 (no zero padding)
+  }, // 1-31 or 01-31 (flexible format)
 } as const
 
 /**
@@ -158,13 +157,13 @@ function getAllPossibleComponents(component: string): DateComponent[] {
     results.push({ type: 'Y', value: parseInt(component, 10), format: 'Y' })
   }
 
-  // Check month formats (order matters: prefer non-zero-padded first)
+  // Check month formats (both M1 and M2 can match the same value to generate all format combinations)
   const monthFormats: Array<{
     key: string
     info: (typeof MONTH_FORMATS)[keyof typeof MONTH_FORMATS]
   }> = [
-    { key: 'M1', info: MONTH_FORMATS.M1 }, // Check non-padded first (preferred)
-    { key: 'M2', info: MONTH_FORMATS.M2 }, // Then zero-padded
+    { key: 'M2', info: MONTH_FORMATS.M2 }, // Zero-padded format
+    { key: 'M1', info: MONTH_FORMATS.M1 }, // Flexible format
     { key: 'Mf', info: MONTH_FORMATS.Mf },
     { key: 'Mfl', info: MONTH_FORMATS.Mfl },
     { key: 'Mfu', info: MONTH_FORMATS.Mfu },
@@ -182,25 +181,16 @@ function getAllPossibleComponents(component: string): DateComponent[] {
         value = parseInt(component, 10)
         if (value < formatInfo.min || value > formatInfo.max) continue
 
-        // Special check for M1: exclude zero-padded numbers
-        if ('excludeZeroPadded' in formatInfo && formatInfo.excludeZeroPadded) {
-          if (component.length >= 2 && component[0] === '0') continue
-        }
+        // Special check for M1: allow zero-padded numbers to be interpreted as non-padded
+        // We should allow both M1 and M2 interpretations for the same numeric value
+        // No exclusion logic needed here - let both formats coexist
 
         // Special check for M2: require that single-digit months are zero-padded
         if ('requireZeroPadded' in formatInfo && formatInfo.requireZeroPadded) {
           // For M2, single-digit values (1-9) are not allowed without zero-padding
           if (value >= 1 && value <= 9 && component.length === 1) continue
-          // For naturally two-digit values (10-12), prefer M1 over M2 to avoid duplicates
-          if (
-            value >= 10 &&
-            value <= 12 &&
-            component.length === 2 &&
-            component[0] !== '0'
-          ) {
-            // Skip M2 for naturally two-digit months to prefer M1
-            continue
-          }
+          // Note: We allow both M1 and M2 for naturally two-digit values (10-12)
+          // to generate all valid format combinations
         }
       } else {
         // Named month
@@ -213,13 +203,13 @@ function getAllPossibleComponents(component: string): DateComponent[] {
     }
   }
 
-  // Check day formats (order matters: prefer non-zero-padded first)
+  // Check day formats (both D1 and D2 can match the same value to generate all format combinations)
   const dayFormats: Array<{
     key: string
     info: (typeof DAY_FORMATS)[keyof typeof DAY_FORMATS]
   }> = [
-    { key: 'D1', info: DAY_FORMATS.D1 }, // Check non-padded first (preferred)
-    { key: 'D2', info: DAY_FORMATS.D2 }, // Then zero-padded
+    { key: 'D2', info: DAY_FORMATS.D2 }, // Zero-padded format
+    { key: 'D1', info: DAY_FORMATS.D1 }, // Flexible format
   ]
 
   for (const { key: formatKey, info: formatInfo } of dayFormats) {
@@ -227,25 +217,16 @@ function getAllPossibleComponents(component: string): DateComponent[] {
       const value = parseInt(component, 10)
       if (value < formatInfo.min || value > formatInfo.max) continue
 
-      // Special check for D1: exclude zero-padded numbers
-      if ('excludeZeroPadded' in formatInfo && formatInfo.excludeZeroPadded) {
-        if (component.length >= 2 && component[0] === '0') continue
-      }
+      // Special check for D1: allow zero-padded numbers to be interpreted as non-padded
+      // We should allow both D1 and D2 interpretations for the same numeric value
+      // No exclusion logic needed here - let both formats coexist
 
       // Special check for D2: require that single-digit days are zero-padded
       if ('requireZeroPadded' in formatInfo && formatInfo.requireZeroPadded) {
         // For D2, single-digit values (1-9) are not allowed without zero-padding
         if (value >= 1 && value <= 9 && component.length === 1) continue
-        // For naturally two-digit values (10-31), prefer D1 over D2 to avoid duplicates
-        if (
-          value >= 10 &&
-          value <= 31 &&
-          component.length === 2 &&
-          component[0] !== '0'
-        ) {
-          // Skip D2 for naturally two-digit days to prefer D1
-          continue
-        }
+        // Note: We allow both D1 and D2 for naturally two-digit values (10-31)
+        // to generate all valid format combinations
       }
 
       results.push({ type: 'D', value, format: formatKey })
@@ -352,7 +333,7 @@ export function parseDateString(dateStr: string): ParseDateResult {
     const allCombinations = generateAllCombinations(allPossibleComponents)
 
     for (const components of allCombinations) {
-      // Group components by type
+      // Group components by type and position
       const yearComps = components.filter((c) => c.type === 'Y')
       const monthComps = components.filter((c) => c.type === 'M')
       const dayComps = components.filter((c) => c.type === 'D')
@@ -361,6 +342,80 @@ export function parseDateString(dateStr: string): ParseDateResult {
       if (yearComps.length > 1 || monthComps.length > 1 || dayComps.length > 1)
         continue
       if (monthComps.length === 0) continue // Month is required
+
+      // Determine valid component arrangements based on position and values
+      const componentTypes = components.map((c) => c.type)
+      const componentValues = components.map((c) => c.value)
+
+      // Check if this arrangement is valid based on position and values
+      let isValidArrangement = true
+
+      if (componentTypes.length === 3) {
+        // Three components: Y, M, D
+        const [type1, type2, type3] = componentTypes
+        const [val1, val2] = componentValues
+
+        if (type1 === 'Y') {
+          // Year first: Y-M-D is always valid, Y-D-M is not
+          if (!(type2 === 'M' && type3 === 'D')) {
+            isValidArrangement = false
+          }
+        } else if (type3 === 'Y') {
+          // Year last: both D-M-Y and M-D-Y could be valid
+          // Check if arrangement makes sense based on values
+          if (type1 === 'D' && type2 === 'M') {
+            // D-M-Y: valid if day > 12 OR month <= 12
+            if (val1 <= 12 && val2 <= 12) {
+              // Ambiguous case - both could be valid, keep this arrangement
+            } else if (val1 > 12) {
+              // Definitely day-month-year
+            } else {
+              // val2 > 12, impossible month
+              isValidArrangement = false
+            }
+          } else if (type1 === 'M' && type2 === 'D') {
+            // M-D-Y: valid if month <= 12 AND (day > 12 OR both <= 12)
+            if (val1 > 12) {
+              // Impossible month
+              isValidArrangement = false
+            } else if (val2 > 12) {
+              // Definitely month-day-year
+            } else {
+              // Both <= 12, ambiguous case - keep this arrangement
+            }
+          } else {
+            isValidArrangement = false
+          }
+        } else {
+          // Year in middle - not a standard format
+          isValidArrangement = false
+        }
+      } else if (componentTypes.length === 2) {
+        // Two components: could be Y-M, M-Y, M-D, D-M
+        const [type1, type2] = componentTypes
+        const [val1, val2] = componentValues
+
+        if (type1 === 'Y' || type2 === 'Y') {
+          // Has year: Y-M or M-Y are both valid
+        } else {
+          // M-D or D-M: both could be valid based on values
+          if (val1 > 12 && val2 <= 12) {
+            // First is definitely day, second is month: D-M
+            if (!(type1 === 'D' && type2 === 'M')) {
+              isValidArrangement = false
+            }
+          } else if (val1 <= 12 && val2 > 12) {
+            // First is month, second is definitely day: M-D
+            if (!(type1 === 'M' && type2 === 'D')) {
+              isValidArrangement = false
+            }
+          } else {
+            // Both <= 12: ambiguous, both M-D and D-M could be valid
+          }
+        }
+      }
+
+      if (!isValidArrangement) continue
 
       const yearComp = yearComps[0]
       const monthComp = monthComps[0]

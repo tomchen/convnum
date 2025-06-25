@@ -1,12 +1,19 @@
 import { expect, test, describe } from 'bun:test'
 import { getTypes, hasType } from '../src'
-import { NumType, TypeInfo } from '../src/utils/types'
+import {
+  CaseType,
+  FormatType,
+  NumType,
+  PrefixType,
+  TypeInfo,
+} from '../src/utils/types'
 
 // Helper function to create TypeInfo objects for easier testing
 function typeInfo(
   type: NumType,
-  caseType?: 'sentence' | 'title' | 'lower' | 'upper',
-  format?: 'long' | 'short',
+  caseType?: CaseType,
+  format?: FormatType,
+  prefix?: PrefixType,
 ): TypeInfo {
   const info: TypeInfo = { type }
   if (caseType !== undefined) {
@@ -14,6 +21,9 @@ function typeInfo(
   }
   if (format !== undefined) {
     info.format = format
+  }
+  if (prefix !== undefined) {
+    info.prefix = prefix
   }
   return info
 }
@@ -27,15 +37,27 @@ describe('getTypes function', () => {
     })
 
     test('should detect binary numbers', () => {
-      expect(getTypes('1010')).toContainEqual(typeInfo('binary'))
-      expect(getTypes('0')).toContainEqual(typeInfo('binary'))
+      expect(getTypes('1010')).toContainEqual(
+        typeInfo('binary', undefined, undefined, false),
+      )
+      expect(getTypes('0')).toContainEqual(
+        typeInfo('binary', undefined, undefined, false),
+      )
     })
 
     test('should detect hexadecimal with case', () => {
-      expect(getTypes('A')).toContainEqual(typeInfo('hexadecimal', 'upper'))
-      expect(getTypes('a')).toContainEqual(typeInfo('hexadecimal', 'lower'))
-      expect(getTypes('FF')).toContainEqual(typeInfo('hexadecimal', 'upper'))
-      expect(getTypes('ff')).toContainEqual(typeInfo('hexadecimal', 'lower'))
+      expect(getTypes('A')).toContainEqual(
+        typeInfo('hexadecimal', 'upper', undefined, false),
+      )
+      expect(getTypes('a')).toContainEqual(
+        typeInfo('hexadecimal', 'lower', undefined, false),
+      )
+      expect(getTypes('FF')).toContainEqual(
+        typeInfo('hexadecimal', 'upper', undefined, false),
+      )
+      expect(getTypes('ff')).toContainEqual(
+        typeInfo('hexadecimal', 'lower', undefined, false),
+      )
     })
 
     test('should detect Roman numerals with case', () => {
@@ -193,13 +215,17 @@ describe('getTypes function', () => {
     test('should detect overlapping types correctly', () => {
       const result = getTypes('A')
       expect(result).toContainEqual(typeInfo('latin_letter', 'upper'))
-      expect(result).toContainEqual(typeInfo('hexadecimal', 'upper'))
+      expect(result).toContainEqual(
+        typeInfo('hexadecimal', 'upper', undefined, false),
+      )
       expect(result.length).toBe(2)
     })
 
     test('should detect Dec as both hexadecimal and month', () => {
       const result = getTypes('Dec')
-      expect(result).toContainEqual(typeInfo('hexadecimal', 'sentence'))
+      expect(result).toContainEqual(
+        typeInfo('hexadecimal', 'sentence', undefined, false),
+      )
       expect(result).toContainEqual(typeInfo('month_name', 'sentence', 'short'))
       expect(result.length).toBe(2)
     })

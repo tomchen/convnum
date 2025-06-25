@@ -18,7 +18,14 @@ import {
 } from '../alphabet'
 import { fromMonth, fromDayOfWeek, toMonth, toDayOfWeek } from '../datetime'
 import { capitalizeFirstLetter } from './letterFns'
-import { NumType, VALID_NUM_TYPES, TypeInfo, CaseType, FormatType } from './types'
+import {
+  NumType,
+  VALID_NUM_TYPES,
+  TypeInfo,
+  CaseType,
+  FormatType,
+  PrefixType,
+} from './types'
 
 /**
  * Determines the case of a string
@@ -30,16 +37,20 @@ function detectCase(str: string): CaseType {
   // Check for title case (first letter of each word capitalized, separated by spaces and "-")
   const words = str.split(/[\s-]+/)
   if (words.length > 1) {
-    const isTitleCase = words.every(word =>
-      word.length > 0 &&
-      word[0] === word[0].toUpperCase() &&
-      word.slice(1) === word.slice(1).toLowerCase()
+    const isTitleCase = words.every(
+      (word) =>
+        word.length > 0 &&
+        word[0] === word[0].toUpperCase() &&
+        word.slice(1) === word.slice(1).toLowerCase(),
     )
     if (isTitleCase) return 'title'
   }
 
   // Check for sentence case (first letter capitalized, rest lowercase)
-  if (str[0] === str[0].toUpperCase() && str.slice(1) === str.slice(1).toLowerCase()) {
+  if (
+    str[0] === str[0].toUpperCase() &&
+    str.slice(1) === str.slice(1).toLowerCase()
+  ) {
     return 'sentence'
   }
 
@@ -48,9 +59,36 @@ function detectCase(str: string): CaseType {
 }
 
 /**
+ * Detects prefix format for base number types
+ */
+function detectPrefix(
+  str: string,
+  type: 'hexadecimal' | 'binary' | 'octal',
+): PrefixType {
+  switch (type) {
+    case 'hexadecimal':
+      if (str.startsWith('0x')) return 'lower'
+      if (str.startsWith('0X')) return 'upper'
+      break
+    case 'binary':
+      if (str.startsWith('0b')) return 'lower'
+      if (str.startsWith('0B')) return 'upper'
+      break
+    case 'octal':
+      if (str.startsWith('0o')) return 'lower'
+      if (str.startsWith('0O')) return 'upper'
+      break
+  }
+  return false
+}
+
+/**
  * Determines the format of month/day names
  */
-function detectDateFormat(str: string, type: 'month' | 'day'): FormatType | undefined {
+function detectDateFormat(
+  str: string,
+  type: 'month' | 'day',
+): FormatType | undefined {
   const normalizedStr = str.toLowerCase()
 
   if (type === 'month') {
@@ -90,9 +128,9 @@ function detectDateFormat(str: string, type: 'month' | 'day'): FormatType | unde
  */
 export const typeValidators: Record<NumType, (str: string) => boolean> = {
   decimal: (str) => /^-?\d+(\.\d+)?$/.test(str),
-  binary: (str) => /^[01]+$/.test(str),
-  octal: (str) => /^[0-7]+$/.test(str),
-  hexadecimal: (str) => /^[0-9a-fA-F]+$/.test(str),
+  binary: (str) => /^(0[bB])?[01]+$/.test(str),
+  octal: (str) => /^(0[oO])?[0-7]+$/.test(str),
+  hexadecimal: (str) => /^(0[xX])?[0-9a-fA-F]+$/.test(str),
   roman: (str) => {
     try {
       fromRoman(str)
@@ -203,15 +241,46 @@ function createTypeInfo(str: string, type: NumType): TypeInfo {
 
   // Types that have case property
   const caseSensitiveTypes = [
-    'latin_letter', 'greek_letter', 'cyrillic_letter', 'roman', 'hexadecimal',
-    'english_cardinal', 'english_words', 'french_words', 'astrological_sign', 'nato_phonetic'
+    'latin_letter',
+    'greek_letter',
+    'cyrillic_letter',
+    'roman',
+    'hexadecimal',
+    'english_cardinal',
+    'english_words',
+    'french_words',
+    'astrological_sign',
+    'nato_phonetic',
   ]
 
   // Types that have both case and format properties
   const dateTypes = ['month_name', 'day_of_week']
 
+  // Types that have prefix property
+  const prefixTypes = ['hexadecimal', 'binary', 'octal']
+
+  // Detect prefix first for base types
+  if (prefixTypes.includes(type)) {
+    typeInfo.prefix = detectPrefix(
+      str,
+      type as 'hexadecimal' | 'binary' | 'octal',
+    )
+  }
+
+  // For case detection on prefixed base types, only look at the non-prefix part
   if (caseSensitiveTypes.includes(type) || dateTypes.includes(type)) {
-    typeInfo.case = detectCase(str)
+    let strForCase = str
+    if (prefixTypes.includes(type) && typeInfo.prefix) {
+      // Remove prefix for case detection
+      if (type === 'hexadecimal') {
+        strForCase = str.replace(/^0[xX]/, '')
+      } else if (type === 'binary') {
+        strForCase = str.replace(/^0[bB]/, '')
+      } else if (type === 'octal') {
+        strForCase = str.replace(/^0[oO]/, '')
+      }
+    }
+    typeInfo.case = detectCase(strForCase)
   }
 
   if (dateTypes.includes(type)) {

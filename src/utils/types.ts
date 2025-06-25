@@ -44,18 +44,24 @@ export type CaseType = 'sentence' | 'title' | 'lower' | 'upper'
 export type FormatType = 'short' | 'long'
 
 /**
+ * Prefix types for base numbers
+ */
+export type PrefixType = false | 'lower' | 'upper'
+
+/**
  * Type information with additional properties
  */
 export type TypeInfo = {
   type: NumType
   case?: CaseType
   format?: FormatType
+  prefix?: PrefixType
 }
 
 /**
  * Array of all valid conversion types (excluding special types 'invalid', 'empty', 'unknown')
  *
- * Sorted by popularity of use / priority to use
+ * Sorted by priority to use (used mainly for detection: when a string is detected as being possible to be of multiple types, the higher the priority, the more likely it is of that type)
  */
 export const VALID_NUM_TYPES: NumType[] = [
   'decimal',

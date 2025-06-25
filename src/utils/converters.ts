@@ -139,11 +139,28 @@ export const typeToFns: Record<
   (num: number, typeInfo?: TypeInfo) => string
 > = {
   decimal: (num) => num.toString(),
-  binary: (num) => toBin(num),
-  octal: (num) => toOct(num),
+  binary: (num, typeInfo) => {
+    const result = toBin(num, typeInfo?.prefix || false)
+    return result
+  },
+  octal: (num, typeInfo) => {
+    const result = toOct(num, typeInfo?.prefix || false)
+    return result
+  },
   hexadecimal: (num, typeInfo) => {
-    const result = toHex(num)
-    return applyCase(result, typeInfo?.case)
+    let result = toHex(num, typeInfo?.prefix || false)
+
+    // Apply case to the hex digits only (not the prefix)
+    if (typeInfo?.case && typeInfo?.prefix) {
+      const prefixPart = typeInfo.prefix === 'lower' ? '0x' : '0X'
+      const hexPart = result.replace(/^0[xX]/, '')
+      const casedHexPart = applyCase(hexPart, typeInfo.case)
+      result = prefixPart + casedHexPart
+    } else if (typeInfo?.case) {
+      result = applyCase(result, typeInfo.case)
+    }
+
+    return result
   },
   roman: (num, typeInfo) => {
     const result = toRoman(num)

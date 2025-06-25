@@ -56,27 +56,41 @@ The library supports conversion and detection of the following number representa
 | Empty | `empty` | `""`, `"   "` | Empty or whitespace-only strings |
 | Unknown | `unknown` | "xyz", "!@#$" | Non-empty strings that don't match any type |
 
-**Note:** [Julian day](https://en.wikipedia.org/wiki/Julian_day) is supported only for conversion, not for detection, and is therefore not included in the `NumType` type.
+**Note:**
+
+- [Julian day](https://en.wikipedia.org/wiki/Julian_day) is supported only for conversion, not for detection, and is therefore not included in the `NumType` type.
+- `parseDateString` and `formatDateString` are date functions, not number representations and not included in the `NumType` type. The two functions are used for precise parsing and formatting of date strings.
 
 ## Features
 
 - **Conversion, validation, and detection** functions for all supported types
-- **Chinese language utilities** (limited to characters used in this library):
-  - Simplified ⇄ Traditional Chinese conversion
 - **Robust error handling** for invalid or unexpected inputs
 - **Thorough test coverage**, including edge cases and uncommon scenarios
 - **Full support for:**
   - Zero, negative values, large numbers (up to quintillions), and other edge cases
   - Multiple locales and number formats
+  - Simplified ⇄ Traditional Chinese conversion (limited to characters used in this library)
   - Case-insensitive input across all functions
   - Zero runtime dependencies
   - Tree-shakable builds (when using specific functions — not the all-in-one version — with ES modules and a proper bundler)
 
+## Release Notes
+
+### 0.1.0
+
+- Initial release
+
+### 0.2.0
+
+- Date functions
+- Detailed typeInfo
+- Base prefix (e.g. "0x01", "0b01", "0o01")
+- Circular support
+
 ## To-do
 
-- Braille support
-- Morse code support
 - Loose matching for French and English words
+- _Maybe not in this lib: braille and morse code support_
 
 ## License
 

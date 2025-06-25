@@ -1,13 +1,26 @@
 /* eslint-disable compat/compat */
 import { expect, test, describe } from 'bun:test'
 import { convertFrom, convertTo, typeFromFns, typeToFns } from '../src'
-import { NumType, VALID_NUM_TYPES, TypeInfo } from '../src/utils/types'
+import {
+  NumType,
+  VALID_NUM_TYPES,
+  TypeInfo,
+  CaseType,
+  FormatType,
+  PrefixType,
+} from '../src/utils/types'
 
 // Helper function to create TypeInfo objects for easier testing
-function typeInfo(type: NumType, caseType?: 'sentence' | 'title' | 'lower' | 'upper', format?: 'long' | 'short'): TypeInfo {
+function typeInfo(
+  type: NumType,
+  caseType?: CaseType,
+  format?: FormatType,
+  prefix?: PrefixType,
+): TypeInfo {
   const info: TypeInfo = { type }
   if (caseType !== undefined) info.case = caseType
   if (format !== undefined) info.format = format
+  if (prefix !== undefined) info.prefix = prefix
   return info
 }
 
@@ -222,17 +235,202 @@ describe('Converter Functions', () => {
     })
 
     test('should handle format parameters', () => {
-      expect(convertTo(1, typeInfo('month_name', 'sentence', 'long'))).toBe('January')
-      expect(convertTo(1, typeInfo('month_name', 'sentence', 'short'))).toBe('Jan')
-      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'long'))).toBe('Sunday')
-      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'short'))).toBe('Sun')
+      expect(convertTo(1, typeInfo('month_name', 'sentence', 'long'))).toBe(
+        'January',
+      )
+      expect(convertTo(1, typeInfo('month_name', 'sentence', 'short'))).toBe(
+        'Jan',
+      )
+      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'long'))).toBe(
+        'Sunday',
+      )
+      expect(convertTo(0, typeInfo('day_of_week', 'sentence', 'short'))).toBe(
+        'Sun',
+      )
     })
 
     test('should handle case with words', () => {
-      expect(convertTo(21, typeInfo('english_words', 'lower'))).toBe('twenty-one')
-      expect(convertTo(21, typeInfo('english_words', 'upper'))).toBe('TWENTY-ONE')
-      expect(convertTo(21, typeInfo('english_words', 'title'))).toBe('Twenty-One')
-      expect(convertTo(21, typeInfo('english_words', 'sentence'))).toBe('Twenty-one')
+      expect(convertTo(21, typeInfo('english_words', 'lower'))).toBe(
+        'twenty-one',
+      )
+      expect(convertTo(21, typeInfo('english_words', 'upper'))).toBe(
+        'TWENTY-ONE',
+      )
+      expect(convertTo(21, typeInfo('english_words', 'title'))).toBe(
+        'Twenty-One',
+      )
+      expect(convertTo(21, typeInfo('english_words', 'sentence'))).toBe(
+        'Twenty-one',
+      )
+    })
+  })
+
+  describe('Prefix functionality', () => {
+    describe('convertFrom with prefixed inputs', () => {
+      test('should convert prefixed hexadecimal strings', () => {
+        expect(convertFrom('0xff', typeInfo('hexadecimal'))).toBe(255)
+        expect(convertFrom('0xFF', typeInfo('hexadecimal'))).toBe(255)
+        expect(convertFrom('0xAB', typeInfo('hexadecimal'))).toBe(171)
+        expect(convertFrom('0X123', typeInfo('hexadecimal'))).toBe(291)
+      })
+
+      test('should convert prefixed binary strings', () => {
+        expect(convertFrom('0b1010', typeInfo('binary'))).toBe(10)
+        expect(convertFrom('0B1010', typeInfo('binary'))).toBe(10)
+        expect(convertFrom('0b11111111', typeInfo('binary'))).toBe(255)
+        expect(convertFrom('0B0', typeInfo('binary'))).toBe(0)
+      })
+
+      test('should convert prefixed octal strings', () => {
+        expect(convertFrom('0o77', typeInfo('octal'))).toBe(63)
+        expect(convertFrom('0O77', typeInfo('octal'))).toBe(63)
+        expect(convertFrom('0o123', typeInfo('octal'))).toBe(83)
+        expect(convertFrom('0O0', typeInfo('octal'))).toBe(0)
+      })
+    })
+
+    describe('convertTo with prefix parameters', () => {
+      test('should generate prefixed hexadecimal strings', () => {
+        expect(
+          convertTo(255, typeInfo('hexadecimal', undefined, undefined, false)),
+        ).toBe('ff')
+        expect(
+          convertTo(
+            255,
+            typeInfo('hexadecimal', undefined, undefined, 'lower'),
+          ),
+        ).toBe('0xff')
+        expect(
+          convertTo(
+            255,
+            typeInfo('hexadecimal', undefined, undefined, 'upper'),
+          ),
+        ).toBe('0XFF')
+        expect(
+          convertTo(
+            171,
+            typeInfo('hexadecimal', undefined, undefined, 'lower'),
+          ),
+        ).toBe('0xab')
+        expect(
+          convertTo(
+            171,
+            typeInfo('hexadecimal', undefined, undefined, 'upper'),
+          ),
+        ).toBe('0XAB')
+      })
+
+      test('should generate prefixed binary strings', () => {
+        expect(
+          convertTo(10, typeInfo('binary', undefined, undefined, false)),
+        ).toBe('1010')
+        expect(
+          convertTo(10, typeInfo('binary', undefined, undefined, 'lower')),
+        ).toBe('0b1010')
+        expect(
+          convertTo(10, typeInfo('binary', undefined, undefined, 'upper')),
+        ).toBe('0B1010')
+        expect(
+          convertTo(255, typeInfo('binary', undefined, undefined, 'lower')),
+        ).toBe('0b11111111')
+        expect(
+          convertTo(255, typeInfo('binary', undefined, undefined, 'upper')),
+        ).toBe('0B11111111')
+      })
+
+      test('should generate prefixed octal strings', () => {
+        expect(
+          convertTo(63, typeInfo('octal', undefined, undefined, false)),
+        ).toBe('77')
+        expect(
+          convertTo(63, typeInfo('octal', undefined, undefined, 'lower')),
+        ).toBe('0o77')
+        expect(
+          convertTo(63, typeInfo('octal', undefined, undefined, 'upper')),
+        ).toBe('0O77')
+        expect(
+          convertTo(83, typeInfo('octal', undefined, undefined, 'lower')),
+        ).toBe('0o123')
+        expect(
+          convertTo(83, typeInfo('octal', undefined, undefined, 'upper')),
+        ).toBe('0O123')
+      })
+
+      test('should handle prefix with case combinations for hexadecimal', () => {
+        expect(
+          convertTo(255, typeInfo('hexadecimal', 'lower', undefined, 'lower')),
+        ).toBe('0xff')
+        expect(
+          convertTo(255, typeInfo('hexadecimal', 'upper', undefined, 'lower')),
+        ).toBe('0xFF')
+        expect(
+          convertTo(255, typeInfo('hexadecimal', 'lower', undefined, 'upper')),
+        ).toBe('0Xff')
+        expect(
+          convertTo(255, typeInfo('hexadecimal', 'upper', undefined, 'upper')),
+        ).toBe('0XFF')
+      })
+    })
+
+    describe('Round-trip conversions with prefixes', () => {
+      test('should work for prefixed hexadecimal', () => {
+        const testCases = [
+          { input: '0xff', expected: { case: 'lower', prefix: 'lower' } },
+          { input: '0xFF', expected: { case: 'upper', prefix: 'lower' } },
+          { input: '0Xff', expected: { case: 'lower', prefix: 'upper' } },
+          { input: '0XFF', expected: { case: 'upper', prefix: 'upper' } },
+        ]
+
+        testCases.forEach(({ input, expected }) => {
+          const number = convertFrom(input, typeInfo('hexadecimal'))
+          const typeInfoObj = typeInfo(
+            'hexadecimal',
+            expected.case as 'lower' | 'upper' | 'sentence',
+            undefined,
+            expected.prefix as 'lower' | 'upper',
+          )
+          const converted = convertTo(number, typeInfoObj)
+          expect(converted).toBe(input)
+        })
+      })
+
+      test('should work for prefixed binary', () => {
+        const testCases = [
+          { input: '0b1010', expected: { prefix: 'lower' } },
+          { input: '0B1010', expected: { prefix: 'upper' } },
+        ]
+
+        testCases.forEach(({ input, expected }) => {
+          const number = convertFrom(input, typeInfo('binary'))
+          const typeInfoObj = typeInfo(
+            'binary',
+            undefined,
+            undefined,
+            expected.prefix as 'lower' | 'upper',
+          )
+          const converted = convertTo(number, typeInfoObj)
+          expect(converted).toBe(input)
+        })
+      })
+
+      test('should work for prefixed octal', () => {
+        const testCases = [
+          { input: '0o77', expected: { prefix: 'lower' } },
+          { input: '0O77', expected: { prefix: 'upper' } },
+        ]
+
+        testCases.forEach(({ input, expected }) => {
+          const number = convertFrom(input, typeInfo('octal'))
+          const typeInfoObj = typeInfo(
+            'octal',
+            undefined,
+            undefined,
+            expected.prefix as 'lower' | 'upper',
+          )
+          const converted = convertTo(number, typeInfoObj)
+          expect(converted).toBe(input)
+        })
+      })
     })
   })
 })

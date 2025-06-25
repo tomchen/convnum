@@ -20,27 +20,43 @@ describe('Converter Functions with TypeInfo', () => {
       // Case and format properties shouldn't affect convertFrom
       expect(convertFrom('A', { type: 'latin_letter', case: 'upper' })).toBe(1)
       expect(convertFrom('a', { type: 'latin_letter', case: 'lower' })).toBe(1)
-      expect(convertFrom('January', { type: 'month_name', case: 'sentence', format: 'long' })).toBe(1)
-      expect(convertFrom('Jan', { type: 'month_name', case: 'sentence', format: 'short' })).toBe(1)
+      expect(
+        convertFrom('January', {
+          type: 'month_name',
+          case: 'sentence',
+          format: 'long',
+        }),
+      ).toBe(1)
+      expect(
+        convertFrom('Jan', {
+          type: 'month_name',
+          case: 'sentence',
+          format: 'short',
+        }),
+      ).toBe(1)
     })
 
     test('should work with complex types', () => {
-      expect(convertFrom('Aries', { type: 'astrological_sign', case: 'sentence' })).toBe(1)
-      expect(convertFrom('twenty-one', { type: 'english_words', case: 'lower' })).toBe(21)
+      expect(
+        convertFrom('Aries', { type: 'astrological_sign', case: 'sentence' }),
+      ).toBe(1)
+      expect(
+        convertFrom('twenty-one', { type: 'english_words', case: 'lower' }),
+      ).toBe(21)
     })
 
     test('should throw error for invalid TypeInfo', () => {
-      expect(() =>
-        convertFrom('123', { type: 'invalid' })
-      ).toThrow('Cannot convert invalid type')
+      expect(() => convertFrom('123', { type: 'invalid' })).toThrow(
+        'Cannot convert invalid type',
+      )
 
-      expect(() =>
-        convertFrom('123', { type: 'empty' })
-      ).toThrow('Cannot convert empty type')
+      expect(() => convertFrom('123', { type: 'empty' })).toThrow(
+        'Cannot convert empty type',
+      )
 
-      expect(() =>
-        convertFrom('123', { type: 'unknown' })
-      ).toThrow('Cannot convert unknown type')
+      expect(() => convertFrom('123', { type: 'unknown' })).toThrow(
+        'Cannot convert unknown type',
+      )
     })
   })
 
@@ -67,40 +83,88 @@ describe('Converter Functions with TypeInfo', () => {
 
     test('should apply case transformations to words', () => {
       // Astrological signs
-      expect(convertTo(1, { type: 'astrological_sign', case: 'lower' })).toBe('aries')
-      expect(convertTo(1, { type: 'astrological_sign', case: 'upper' })).toBe('ARIES')
-      expect(convertTo(1, { type: 'astrological_sign', case: 'sentence' })).toBe('Aries')
+      expect(convertTo(1, { type: 'astrological_sign', case: 'lower' })).toBe(
+        'aries',
+      )
+      expect(convertTo(1, { type: 'astrological_sign', case: 'upper' })).toBe(
+        'ARIES',
+      )
+      expect(
+        convertTo(1, { type: 'astrological_sign', case: 'sentence' }),
+      ).toBe('Aries')
 
       // NATO phonetic
-      expect(convertTo(1, { type: 'nato_phonetic', case: 'lower' })).toBe('alfa')
-      expect(convertTo(1, { type: 'nato_phonetic', case: 'upper' })).toBe('ALFA')
-      expect(convertTo(1, { type: 'nato_phonetic', case: 'sentence' })).toBe('Alfa')
+      expect(convertTo(1, { type: 'nato_phonetic', case: 'lower' })).toBe(
+        'alfa',
+      )
+      expect(convertTo(1, { type: 'nato_phonetic', case: 'upper' })).toBe(
+        'ALFA',
+      )
+      expect(convertTo(1, { type: 'nato_phonetic', case: 'sentence' })).toBe(
+        'Alfa',
+      )
 
       // English words
-      expect(convertTo(21, { type: 'english_words', case: 'lower' })).toBe('twenty-one')
-      expect(convertTo(21, { type: 'english_words', case: 'upper' })).toBe('TWENTY-ONE')
-      expect(convertTo(21, { type: 'english_words', case: 'sentence' })).toBe('Twenty-one')
-      expect(convertTo(21, { type: 'english_words', case: 'title' })).toBe('Twenty-One')
+      expect(convertTo(21, { type: 'english_words', case: 'lower' })).toBe(
+        'twenty-one',
+      )
+      expect(convertTo(21, { type: 'english_words', case: 'upper' })).toBe(
+        'TWENTY-ONE',
+      )
+      expect(convertTo(21, { type: 'english_words', case: 'sentence' })).toBe(
+        'Twenty-one',
+      )
+      expect(convertTo(21, { type: 'english_words', case: 'title' })).toBe(
+        'Twenty-One',
+      )
 
       // French words
-      expect(convertTo(21, { type: 'french_words', case: 'lower' })).toBe('vingt-et-un')
-      expect(convertTo(21, { type: 'french_words', case: 'upper' })).toBe('VINGT-ET-UN')
-      expect(convertTo(21, { type: 'french_words', case: 'sentence' })).toBe('Vingt-et-un')
-      expect(convertTo(21, { type: 'french_words', case: 'title' })).toBe('Vingt-Et-Un')
+      expect(convertTo(21, { type: 'french_words', case: 'lower' })).toBe(
+        'vingt-et-un',
+      )
+      expect(convertTo(21, { type: 'french_words', case: 'upper' })).toBe(
+        'VINGT-ET-UN',
+      )
+      expect(convertTo(21, { type: 'french_words', case: 'sentence' })).toBe(
+        'Vingt-et-un',
+      )
+      expect(convertTo(21, { type: 'french_words', case: 'title' })).toBe(
+        'Vingt-Et-Un',
+      )
     })
 
     test('should apply format for date/time types', () => {
       // Month names
-      expect(convertTo(1, { type: 'month_name', format: 'long', case: 'sentence' })).toBe('January')
-      expect(convertTo(1, { type: 'month_name', format: 'short', case: 'sentence' })).toBe('Jan')
-      expect(convertTo(1, { type: 'month_name', format: 'long', case: 'lower' })).toBe('january')
-      expect(convertTo(1, { type: 'month_name', format: 'short', case: 'upper' })).toBe('JAN')
+      expect(
+        convertTo(1, { type: 'month_name', format: 'long', case: 'sentence' }),
+      ).toBe('January')
+      expect(
+        convertTo(1, { type: 'month_name', format: 'short', case: 'sentence' }),
+      ).toBe('Jan')
+      expect(
+        convertTo(1, { type: 'month_name', format: 'long', case: 'lower' }),
+      ).toBe('january')
+      expect(
+        convertTo(1, { type: 'month_name', format: 'short', case: 'upper' }),
+      ).toBe('JAN')
 
       // Day of week names
-      expect(convertTo(1, { type: 'day_of_week', format: 'long', case: 'sentence' })).toBe('Monday')
-      expect(convertTo(1, { type: 'day_of_week', format: 'short', case: 'sentence' })).toBe('Mon')
-      expect(convertTo(1, { type: 'day_of_week', format: 'long', case: 'lower' })).toBe('monday')
-      expect(convertTo(1, { type: 'day_of_week', format: 'short', case: 'upper' })).toBe('MON')
+      expect(
+        convertTo(1, { type: 'day_of_week', format: 'long', case: 'sentence' }),
+      ).toBe('Monday')
+      expect(
+        convertTo(1, {
+          type: 'day_of_week',
+          format: 'short',
+          case: 'sentence',
+        }),
+      ).toBe('Mon')
+      expect(
+        convertTo(1, { type: 'day_of_week', format: 'long', case: 'lower' }),
+      ).toBe('monday')
+      expect(
+        convertTo(1, { type: 'day_of_week', format: 'short', case: 'upper' }),
+      ).toBe('MON')
     })
 
     test('should handle hexadecimal case', () => {
@@ -118,11 +182,21 @@ describe('Converter Functions with TypeInfo', () => {
     })
 
     test('should handle english cardinal case', () => {
-      expect(convertTo(1, { type: 'english_cardinal', case: 'lower' })).toBe('1st')
-      expect(convertTo(1, { type: 'english_cardinal', case: 'upper' })).toBe('1ST')
-      expect(convertTo(1, { type: 'english_cardinal', case: 'sentence' })).toBe('1st')
-      expect(convertTo(2, { type: 'english_cardinal', case: 'lower' })).toBe('2nd')
-      expect(convertTo(2, { type: 'english_cardinal', case: 'upper' })).toBe('2ND')
+      expect(convertTo(1, { type: 'english_cardinal', case: 'lower' })).toBe(
+        '1st',
+      )
+      expect(convertTo(1, { type: 'english_cardinal', case: 'upper' })).toBe(
+        '1ST',
+      )
+      expect(convertTo(1, { type: 'english_cardinal', case: 'sentence' })).toBe(
+        '1st',
+      )
+      expect(convertTo(2, { type: 'english_cardinal', case: 'lower' })).toBe(
+        '2nd',
+      )
+      expect(convertTo(2, { type: 'english_cardinal', case: 'upper' })).toBe(
+        '2ND',
+      )
     })
 
     test('should use defaults when case/format not specified', () => {
@@ -138,16 +212,34 @@ describe('Converter Functions with TypeInfo', () => {
       const testCases: Array<{ input: string; typeInfo: TypeInfo }> = [
         { input: 'A', typeInfo: { type: 'latin_letter', case: 'upper' } },
         { input: 'a', typeInfo: { type: 'latin_letter', case: 'lower' } },
-        { input: 'ARIES', typeInfo: { type: 'astrological_sign', case: 'upper' } },
-        { input: 'aries', typeInfo: { type: 'astrological_sign', case: 'lower' } },
-        { input: 'January', typeInfo: { type: 'month_name', case: 'sentence', format: 'long' } },
-        { input: 'JAN', typeInfo: { type: 'month_name', case: 'upper', format: 'short' } },
+        {
+          input: 'ARIES',
+          typeInfo: { type: 'astrological_sign', case: 'upper' },
+        },
+        {
+          input: 'aries',
+          typeInfo: { type: 'astrological_sign', case: 'lower' },
+        },
+        {
+          input: 'January',
+          typeInfo: { type: 'month_name', case: 'sentence', format: 'long' },
+        },
+        {
+          input: 'JAN',
+          typeInfo: { type: 'month_name', case: 'upper', format: 'short' },
+        },
         { input: 'FF', typeInfo: { type: 'hexadecimal', case: 'upper' } },
         { input: 'ff', typeInfo: { type: 'hexadecimal', case: 'lower' } },
         { input: 'IV', typeInfo: { type: 'roman', case: 'upper' } },
         { input: 'iv', typeInfo: { type: 'roman', case: 'lower' } },
-        { input: 'Twenty-One', typeInfo: { type: 'english_words', case: 'title' } },
-        { input: 'twenty-one', typeInfo: { type: 'english_words', case: 'lower' } },
+        {
+          input: 'Twenty-One',
+          typeInfo: { type: 'english_words', case: 'title' },
+        },
+        {
+          input: 'twenty-one',
+          typeInfo: { type: 'english_words', case: 'lower' },
+        },
       ]
 
       testCases.forEach(({ input, typeInfo }) => {
@@ -160,18 +252,74 @@ describe('Converter Functions with TypeInfo', () => {
     test('should work with all types that have properties', () => {
       // Test a comprehensive set of types with their properties
       const testData = [
-        { num: 1, typeInfo: { type: 'latin_letter', case: 'upper' } as TypeInfo, expected: 'A' },
-        { num: 1, typeInfo: { type: 'greek_letter', case: 'lower' } as TypeInfo, expected: 'α' },
-        { num: 1, typeInfo: { type: 'cyrillic_letter', case: 'upper' } as TypeInfo, expected: 'А' },
-        { num: 3, typeInfo: { type: 'month_name', case: 'lower', format: 'short' } as TypeInfo, expected: 'mar' },
-        { num: 0, typeInfo: { type: 'day_of_week', case: 'upper', format: 'long' } as TypeInfo, expected: 'SUNDAY' },
-        { num: 255, typeInfo: { type: 'hexadecimal', case: 'upper' } as TypeInfo, expected: 'FF' },
-        { num: 9, typeInfo: { type: 'roman', case: 'lower' } as TypeInfo, expected: 'ix' },
-                 { num: 2, typeInfo: { type: 'english_cardinal', case: 'sentence' } as TypeInfo, expected: '2nd' },
-        { num: 42, typeInfo: { type: 'english_words', case: 'title' } as TypeInfo, expected: 'Forty-Two' },
-        { num: 33, typeInfo: { type: 'french_words', case: 'upper' } as TypeInfo, expected: 'TRENTE-TROIS' },
-        { num: 5, typeInfo: { type: 'astrological_sign', case: 'sentence' } as TypeInfo, expected: 'Leo' },
-        { num: 7, typeInfo: { type: 'nato_phonetic', case: 'lower' } as TypeInfo, expected: 'golf' },
+        {
+          num: 1,
+          typeInfo: { type: 'latin_letter', case: 'upper' } as TypeInfo,
+          expected: 'A',
+        },
+        {
+          num: 1,
+          typeInfo: { type: 'greek_letter', case: 'lower' } as TypeInfo,
+          expected: 'α',
+        },
+        {
+          num: 1,
+          typeInfo: { type: 'cyrillic_letter', case: 'upper' } as TypeInfo,
+          expected: 'А',
+        },
+        {
+          num: 3,
+          typeInfo: {
+            type: 'month_name',
+            case: 'lower',
+            format: 'short',
+          } as TypeInfo,
+          expected: 'mar',
+        },
+        {
+          num: 0,
+          typeInfo: {
+            type: 'day_of_week',
+            case: 'upper',
+            format: 'long',
+          } as TypeInfo,
+          expected: 'SUNDAY',
+        },
+        {
+          num: 255,
+          typeInfo: { type: 'hexadecimal', case: 'upper' } as TypeInfo,
+          expected: 'FF',
+        },
+        {
+          num: 9,
+          typeInfo: { type: 'roman', case: 'lower' } as TypeInfo,
+          expected: 'ix',
+        },
+        {
+          num: 2,
+          typeInfo: { type: 'english_cardinal', case: 'sentence' } as TypeInfo,
+          expected: '2nd',
+        },
+        {
+          num: 42,
+          typeInfo: { type: 'english_words', case: 'title' } as TypeInfo,
+          expected: 'Forty-Two',
+        },
+        {
+          num: 33,
+          typeInfo: { type: 'french_words', case: 'upper' } as TypeInfo,
+          expected: 'TRENTE-TROIS',
+        },
+        {
+          num: 5,
+          typeInfo: { type: 'astrological_sign', case: 'sentence' } as TypeInfo,
+          expected: 'Leo',
+        },
+        {
+          num: 7,
+          typeInfo: { type: 'nato_phonetic', case: 'lower' } as TypeInfo,
+          expected: 'golf',
+        },
       ]
 
       testData.forEach(({ num, typeInfo, expected }) => {
@@ -188,16 +336,16 @@ describe('Converter Functions with TypeInfo', () => {
   describe('Error handling with TypeInfo', () => {
     test('should throw meaningful errors', () => {
       expect(() =>
-        convertFrom('invalid', { type: 'roman', case: 'upper' })
+        convertFrom('invalid', { type: 'roman', case: 'upper' }),
       ).toThrow('Failed to convert "invalid" from type "roman"')
 
-      expect(() =>
-        convertTo(0, { type: 'roman', case: 'lower' })
-      ).toThrow('Failed to convert 0 to type "roman"')
+      expect(() => convertTo(0, { type: 'roman', case: 'lower' })).toThrow(
+        'Failed to convert 0 to type "roman"',
+      )
 
-      expect(() =>
-        convertTo(123, { type: 'invalid' })
-      ).toThrow('Cannot convert to invalid type')
+      expect(() => convertTo(123, { type: 'invalid' })).toThrow(
+        'Cannot convert to invalid type',
+      )
     })
   })
 })

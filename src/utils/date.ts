@@ -7,7 +7,12 @@ const SEPARATORS = ['-', '.', '/', ',', ', '] as const
  * Month format types and their patterns
  */
 const MONTH_FORMATS = {
-  M2: { pattern: /^(0[1-9]|1[0-2])$/, min: 1, max: 12, requireZeroPadded: true }, // 01-12 (zero-padded)
+  M2: {
+    pattern: /^(0[1-9]|1[0-2])$/,
+    min: 1,
+    max: 12,
+    requireZeroPadded: true,
+  }, // 01-12 (zero-padded)
   M1: { pattern: /^([1-9]|1[0-2])$/, min: 1, max: 12, excludeZeroPadded: true }, // 1-12 (no padding)
   Mf: { pattern: /^([A-Z][a-z]{3,})$/ }, // January (4+ letters after capital)
   Mfl: { pattern: /^([a-z]{4,})$/ }, // january (4+ lowercase letters)
@@ -21,8 +26,18 @@ const MONTH_FORMATS = {
  * Day format types and their patterns
  */
 const DAY_FORMATS = {
-  D2: { pattern: /^(0[1-9]|[1-2][0-9]|3[01])$/, min: 1, max: 31, requireZeroPadded: true }, // 01-31 (zero-padded only)
-  D1: { pattern: /^([1-9]|1[0-9]|2[0-9]|3[01])$/, min: 1, max: 31, excludeZeroPadded: true }, // 1-31 (no zero padding)
+  D2: {
+    pattern: /^(0[1-9]|[1-2][0-9]|3[01])$/,
+    min: 1,
+    max: 31,
+    requireZeroPadded: true,
+  }, // 01-31 (zero-padded only)
+  D1: {
+    pattern: /^([1-9]|1[0-9]|2[0-9]|3[01])$/,
+    min: 1,
+    max: 31,
+    excludeZeroPadded: true,
+  }, // 1-31 (no zero padding)
 } as const
 
 /**
@@ -34,10 +49,34 @@ const YEAR_PATTERN = /^(\d{4})$/
  * Month names for conversion
  */
 const MONTH_NAMES = {
-  full: ['January', 'February', 'March', 'April', 'May', 'June',
-         'July', 'August', 'September', 'October', 'November', 'December'],
-  short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  full: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ],
+  short: [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ],
 }
 
 /**
@@ -65,11 +104,15 @@ function monthNameToNumber(monthStr: string): number | null {
   const lowerMonth = monthStr.toLowerCase()
 
   // Check full month names
-  const fullIndex = MONTH_NAMES.full.findIndex(name => name.toLowerCase() === lowerMonth)
+  const fullIndex = MONTH_NAMES.full.findIndex(
+    (name) => name.toLowerCase() === lowerMonth,
+  )
   if (fullIndex !== -1) return fullIndex + 1
 
   // Check short month names
-  const shortIndex = MONTH_NAMES.short.findIndex(name => name.toLowerCase() === lowerMonth)
+  const shortIndex = MONTH_NAMES.short.findIndex(
+    (name) => name.toLowerCase() === lowerMonth,
+  )
   if (shortIndex !== -1) return shortIndex + 1
 
   return null
@@ -82,19 +125,28 @@ function numberToMonthName(monthNum: number, format: string): string {
   const monthIndex = monthNum - 1
 
   switch (format) {
-    case 'M1': return monthNum.toString()
-    case 'M2': return monthNum.toString().padStart(2, '0')
-    case 'Mf': return MONTH_NAMES.full[monthIndex]
-    case 'Mfl': return MONTH_NAMES.full[monthIndex].toLowerCase()
-    case 'Mfu': return MONTH_NAMES.full[monthIndex].toUpperCase()
-    case 'Ms': return MONTH_NAMES.short[monthIndex]
-    case 'Msl': return MONTH_NAMES.short[monthIndex].toLowerCase()
-    case 'Msu': return MONTH_NAMES.short[monthIndex].toUpperCase()
-    default: return monthNum.toString()
+    case 'M1':
+      return monthNum.toString()
+    case 'M2':
+      return monthNum.toString().padStart(2, '0')
+    case 'Mf':
+      return MONTH_NAMES.full[monthIndex]
+    case 'Mfl':
+      return MONTH_NAMES.full[monthIndex].toLowerCase()
+    case 'Mfu':
+      return MONTH_NAMES.full[monthIndex].toUpperCase()
+    case 'Ms':
+      return MONTH_NAMES.short[monthIndex]
+    case 'Msl':
+      return MONTH_NAMES.short[monthIndex].toLowerCase()
+    case 'Msu':
+      return MONTH_NAMES.short[monthIndex].toUpperCase()
+    default:
+      return monthNum.toString()
   }
 }
 
-type DateComponent = { type: 'Y' | 'M' | 'D', value: number, format: string }
+type DateComponent = { type: 'Y' | 'M' | 'D'; value: number; format: string }
 
 /**
  * Gets all possible interpretations for a date component
@@ -108,7 +160,10 @@ function getAllPossibleComponents(component: string): DateComponent[] {
   }
 
   // Check month formats (order matters: check more specific patterns first)
-  const monthFormats: Array<{ key: string, info: typeof MONTH_FORMATS[keyof typeof MONTH_FORMATS] }> = [
+  const monthFormats: Array<{
+    key: string
+    info: (typeof MONTH_FORMATS)[keyof typeof MONTH_FORMATS]
+  }> = [
     { key: 'M2', info: MONTH_FORMATS.M2 }, // Check zero-padded first
     { key: 'M1', info: MONTH_FORMATS.M1 }, // Then non-padded
     { key: 'Mf', info: MONTH_FORMATS.Mf },
@@ -116,7 +171,7 @@ function getAllPossibleComponents(component: string): DateComponent[] {
     { key: 'Mfu', info: MONTH_FORMATS.Mfu },
     { key: 'Ms', info: MONTH_FORMATS.Ms },
     { key: 'Msl', info: MONTH_FORMATS.Msl },
-    { key: 'Msu', info: MONTH_FORMATS.Msu }
+    { key: 'Msu', info: MONTH_FORMATS.Msu },
   ]
 
   for (const { key: formatKey, info: formatInfo } of monthFormats) {
@@ -149,9 +204,12 @@ function getAllPossibleComponents(component: string): DateComponent[] {
   }
 
   // Check day formats (order matters: check more specific patterns first)
-  const dayFormats: Array<{ key: string, info: typeof DAY_FORMATS[keyof typeof DAY_FORMATS] }> = [
+  const dayFormats: Array<{
+    key: string
+    info: (typeof DAY_FORMATS)[keyof typeof DAY_FORMATS]
+  }> = [
     { key: 'D2', info: DAY_FORMATS.D2 }, // Check zero-padded first
-    { key: 'D1', info: DAY_FORMATS.D1 }  // Then non-padded
+    { key: 'D1', info: DAY_FORMATS.D1 }, // Then non-padded
   ]
 
   for (const { key: formatKey, info: formatInfo } of dayFormats) {
@@ -181,7 +239,7 @@ function getAllPossibleComponents(component: string): DateComponent[] {
  */
 function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
   if (arrays.length === 0) return []
-  if (arrays.length === 1) return arrays[0].map(item => [item])
+  if (arrays.length === 1) return arrays[0].map((item) => [item])
 
   const result: DateComponent[][] = []
   const restCombinations = generateAllCombinations(arrays.slice(1))
@@ -194,8 +252,6 @@ function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
 
   return result
 }
-
-
 
 /**
  * Parses a date string and returns all possible interpretations with their corresponding timestamps.
@@ -255,22 +311,28 @@ export function parseDateString(dateStr: string): ParseDateResult {
     if (parts.length < 2 || parts.length > 3) continue
 
     // Get all possible interpretations for each part
-    const allPossibleComponents = parts.map(part => getAllPossibleComponents(part.trim()))
+    const allPossibleComponents = parts.map((part) =>
+      getAllPossibleComponents(part.trim()),
+    )
 
     // Check if all parts have valid interpretations
-    if (allPossibleComponents.some(possibilities => possibilities.length === 0)) continue
+    if (
+      allPossibleComponents.some((possibilities) => possibilities.length === 0)
+    )
+      continue
 
     // Generate all combinations
     const allCombinations = generateAllCombinations(allPossibleComponents)
 
     for (const components of allCombinations) {
       // Group components by type
-      const yearComps = components.filter(c => c.type === 'Y')
-      const monthComps = components.filter(c => c.type === 'M')
-      const dayComps = components.filter(c => c.type === 'D')
+      const yearComps = components.filter((c) => c.type === 'Y')
+      const monthComps = components.filter((c) => c.type === 'M')
+      const dayComps = components.filter((c) => c.type === 'D')
 
       // Valid combinations must have exactly one of each required type
-      if (yearComps.length > 1 || monthComps.length > 1 || dayComps.length > 1) continue
+      if (yearComps.length > 1 || monthComps.length > 1 || dayComps.length > 1)
+        continue
       if (monthComps.length === 0) continue // Month is required
 
       const yearComp = yearComps[0]
@@ -284,12 +346,16 @@ export function parseDateString(dateStr: string): ParseDateResult {
 
       // Validate date
       const date = new Date(year, month - 1, day)
-      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+      if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+      ) {
         continue // Invalid date
       }
 
       // Build format string
-      const formatParts = components.map(comp => comp.format)
+      const formatParts = components.map((comp) => comp.format)
       let format: string
 
       if (separator === ', ' && formatParts.length === 3) {
@@ -302,12 +368,14 @@ export function parseDateString(dateStr: string): ParseDateResult {
       // Create interpretation with corresponding timestamp
       const interpretation: DateInterpretation = {
         timestamp: date.getTime(),
-        format: format
+        format: format,
       }
 
       // Avoid duplicates (same format and timestamp)
-      const isDuplicate = interpretations.some(interp =>
-        interp.format === interpretation.format && interp.timestamp === interpretation.timestamp
+      const isDuplicate = interpretations.some(
+        (interp) =>
+          interp.format === interpretation.format &&
+          interp.timestamp === interpretation.timestamp,
       )
 
       if (!isDuplicate) {
@@ -377,14 +445,16 @@ export function formatDateString(timestamp: number, format: string): string {
     }
 
     if (!separator) {
-      throw new Error(`Invalid format: no recognized separator found in "${format}"`)
+      throw new Error(
+        `Invalid format: no recognized separator found in "${format}"`,
+      )
     }
 
     formatParts = format.split(separator)
   }
 
   // Convert each part (trim spaces from each part)
-  const resultParts = formatParts.map(part => {
+  const resultParts = formatParts.map((part) => {
     const trimmedPart = part.trim()
     if (trimmedPart === 'Y') {
       return year.toString()
@@ -392,9 +462,12 @@ export function formatDateString(timestamp: number, format: string): string {
       return numberToMonthName(month, trimmedPart)
     } else if (trimmedPart.startsWith('D')) {
       switch (trimmedPart) {
-        case 'D1': return day.toString()
-        case 'D2': return day.toString().padStart(2, '0')
-        default: throw new Error(`Invalid day format: "${trimmedPart}"`)
+        case 'D1':
+          return day.toString()
+        case 'D2':
+          return day.toString().padStart(2, '0')
+        default:
+          throw new Error(`Invalid day format: "${trimmedPart}"`)
       }
     } else {
       throw new Error(`Invalid format component: "${trimmedPart}"`)

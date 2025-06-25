@@ -1,4 +1,4 @@
-import { modNoZero } from './modNoZero'
+import { modNoZero } from './circular'
 
 export function toArrayItem(num: number, arr: string[], circular = false) {
   if (!Number.isInteger(num)) {

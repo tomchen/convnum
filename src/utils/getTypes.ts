@@ -155,9 +155,9 @@ export const typeValidators: Record<NumType, (str: string) => boolean> = {
       return false
     }
   },
-  english_words: (str) => validateEnglishWords(str),
-  french_words: (str) => validateFrenchWords(str),
-  chinese_words: (str) => validateChineseWords(str),
+  english_words: (str) => validateEnglishWords(str), // currently strict validation
+  french_words: (str) => validateFrenchWords(str), // currently strict validation
+  chinese_words: (str) => validateChineseWords(str), // currently strict validation
   chinese_financial: (str) => /^[零壹贰叁肆伍陆柒捌玖拾佰仟万亿]+$/.test(str),
   chinese_heavenly_stem: (str) => {
     try {

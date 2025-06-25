@@ -245,7 +245,7 @@ export function fromFrenchWords(words: string): number {
 }
 
 /**
- * Validates if a string is a valid French number word representation
+ * Validates if a string is a strictly valid French number word representation
  * by converting it to a number and back to words to check for consistency
  * @param words - The French words to validate
  * @returns true if the words are valid, false otherwise

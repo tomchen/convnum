@@ -92,10 +92,7 @@ export interface DateInterpretation {
 /**
  * Result of date string parsing containing all possible interpretations
  */
-export interface ParseDateResult {
-  /** Array of all possible interpretations, each with its own timestamp and format */
-  interpretations: DateInterpretation[]
-}
+export type ParseDateResult = DateInterpretation[]
 
 /**
  * Converts a month name to month number (1-12)
@@ -265,25 +262,25 @@ function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
  * - M-D format: year defaults to 1970
  *
  * @param dateStr - The date string to parse (e.g., "2023-01-05", "25.12.2023", "Jan 15, 2023")
- * @returns Object containing array of all possible interpretations, each with timestamp and format
+ * @returns Array of all possible interpretations, each with timestamp and format
  * @throws Error if the date string format is not recognized or invalid
  *
  * @example
  * ```ts
  * parseDateString('2023-01-05')
- * // { interpretations: [
+ * // [
  * //   { timestamp: 1672876800000, format: 'Y-M2-D2' },  // Jan 5, 2023
  * //   { timestamp: 1683763200000, format: 'Y-D2-M2' }   // May 1, 2023
- * // ]}
+ * // ]
  *
  * parseDateString('25.12.2023')
- * // { interpretations: [{ timestamp: 1703462400000, format: 'D1.M1.Y' }] }  // Dec 25, 2023
+ * // [{ timestamp: 1703462400000, format: 'D1.M1.Y' }]  // Dec 25, 2023
  *
  * parseDateString('Dec 25, 2023')
- * // { interpretations: [{ timestamp: 1703462400000, format: 'Ms D1, Y' }] }  // Dec 25, 2023
+ * // [{ timestamp: 1703462400000, format: 'Ms D1, Y' }]  // Dec 25, 2023
  *
  * parseDateString('2023-12')
- * // { interpretations: [{ timestamp: 1701388800000, format: 'Y-M1' }] }  // Dec 1, 2023
+ * // [{ timestamp: 1701388800000, format: 'Y-M1' }]  // Dec 1, 2023
  * ```
  */
 export function parseDateString(dateStr: string): ParseDateResult {
@@ -388,7 +385,7 @@ export function parseDateString(dateStr: string): ParseDateResult {
     throw new Error(`Unable to parse date string: "${dateStr}"`)
   }
 
-  return { interpretations }
+  return interpretations
 }
 
 /**

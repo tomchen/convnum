@@ -91,12 +91,12 @@ The library supports conversion and detection of the following number representa
 
 - Simplify ParseDateResult interface
 
-### 0.2.2
+### 0.2.3
 
 - Out-of-range circular support for all types in `convertTo`
 - Export version
 
-### 0.2.3
+### 0.2.4
 
 - Add year-month only support
 

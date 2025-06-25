@@ -1,7 +1,7 @@
 /**
  * Supported separators for date strings
  */
-const SEPARATORS = ['-', '.', '/', ',', ', '] as const
+const SEPARATORS = ['-', '.', '/', ',', ', ', ' '] as const
 
 /**
  * Month format types and their patterns
@@ -87,6 +87,8 @@ export interface DateInterpretation {
   timestamp: number
   /** Format string for this interpretation (e.g., "Y-M2-D2") */
   format: string
+  /** Number of months after 1970-01 (only present for year-month only dates) */
+  months?: number
 }
 
 /**
@@ -156,13 +158,13 @@ function getAllPossibleComponents(component: string): DateComponent[] {
     results.push({ type: 'Y', value: parseInt(component, 10), format: 'Y' })
   }
 
-  // Check month formats (order matters: check more specific patterns first)
+  // Check month formats (order matters: prefer non-zero-padded first)
   const monthFormats: Array<{
     key: string
     info: (typeof MONTH_FORMATS)[keyof typeof MONTH_FORMATS]
   }> = [
-    { key: 'M2', info: MONTH_FORMATS.M2 }, // Check zero-padded first
-    { key: 'M1', info: MONTH_FORMATS.M1 }, // Then non-padded
+    { key: 'M1', info: MONTH_FORMATS.M1 }, // Check non-padded first (preferred)
+    { key: 'M2', info: MONTH_FORMATS.M2 }, // Then zero-padded
     { key: 'Mf', info: MONTH_FORMATS.Mf },
     { key: 'Mfl', info: MONTH_FORMATS.Mfl },
     { key: 'Mfu', info: MONTH_FORMATS.Mfu },
@@ -185,9 +187,15 @@ function getAllPossibleComponents(component: string): DateComponent[] {
           if (component.length >= 2 && component[0] === '0') continue
         }
 
-        // Special check for M2: require zero-padded for two-digit numbers
+        // Special check for M2: require that single-digit months are zero-padded
         if ('requireZeroPadded' in formatInfo && formatInfo.requireZeroPadded) {
-          if (component.length >= 2 && component[0] !== '0') continue
+          // For M2, single-digit values (1-9) are not allowed without zero-padding
+          if (value >= 1 && value <= 9 && component.length === 1) continue
+          // For naturally two-digit values (10-12), prefer M1 over M2 to avoid duplicates
+          if (value >= 10 && value <= 12 && component.length === 2 && component[0] !== '0') {
+            // Skip M2 for naturally two-digit months to prefer M1
+            continue
+          }
         }
       } else {
         // Named month
@@ -200,13 +208,13 @@ function getAllPossibleComponents(component: string): DateComponent[] {
     }
   }
 
-  // Check day formats (order matters: check more specific patterns first)
+  // Check day formats (order matters: prefer non-zero-padded first)
   const dayFormats: Array<{
     key: string
     info: (typeof DAY_FORMATS)[keyof typeof DAY_FORMATS]
   }> = [
-    { key: 'D2', info: DAY_FORMATS.D2 }, // Check zero-padded first
-    { key: 'D1', info: DAY_FORMATS.D1 }, // Then non-padded
+    { key: 'D1', info: DAY_FORMATS.D1 }, // Check non-padded first (preferred)
+    { key: 'D2', info: DAY_FORMATS.D2 }, // Then zero-padded
   ]
 
   for (const { key: formatKey, info: formatInfo } of dayFormats) {
@@ -219,9 +227,15 @@ function getAllPossibleComponents(component: string): DateComponent[] {
         if (component.length >= 2 && component[0] === '0') continue
       }
 
-      // Special check for D2: require zero-padded for two-digit numbers
+      // Special check for D2: require that single-digit days are zero-padded
       if ('requireZeroPadded' in formatInfo && formatInfo.requireZeroPadded) {
-        if (component.length >= 2 && component[0] !== '0') continue
+        // For D2, single-digit values (1-9) are not allowed without zero-padding
+        if (value >= 1 && value <= 9 && component.length === 1) continue
+        // For naturally two-digit values (10-31), prefer D1 over D2 to avoid duplicates
+        if (value >= 10 && value <= 31 && component.length === 2 && component[0] !== '0') {
+          // Skip D2 for naturally two-digit days to prefer D1
+          continue
+        }
       }
 
       results.push({ type: 'D', value, format: formatKey })
@@ -261,8 +275,11 @@ function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
  * - Y-M-D format: time defaults to 00:00:00.000
  * - M-D format: year defaults to 1970
  *
+ * @remarks For year-month only dates (no day component), the result includes a `months` property
+ * representing the number of months since 1970-01 (where 1970-01 = 0, 1970-02 = 1, etc.).
+ *
  * @param dateStr - The date string to parse (e.g., "2023-01-05", "25.12.2023", "Jan 15, 2023")
- * @returns Array of all possible interpretations, each with timestamp and format
+ * @returns Array of all possible interpretations, each with timestamp, format, and optionally months
  * @throws Error if the date string format is not recognized or invalid
  *
  * @example
@@ -280,7 +297,10 @@ function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
  * // [{ timestamp: 1703462400000, format: 'Ms D1, Y' }]  // Dec 25, 2023
  *
  * parseDateString('2023-12')
- * // [{ timestamp: 1701388800000, format: 'Y-M1' }]  // Dec 1, 2023
+ * // [{ timestamp: 1701388800000, format: 'Y-M1', months: 647 }]  // Dec 1, 2023, 647 months since 1970-01
+ *
+ * parseDateString('Jan 2024')
+ * // [{ timestamp: 1704067200000, format: 'Ms Y', months: 648 }]  // Jan 1, 2024, 648 months since 1970-01
  * ```
  */
 export function parseDateString(dateStr: string): ParseDateResult {
@@ -366,6 +386,11 @@ export function parseDateString(dateStr: string): ParseDateResult {
       const interpretation: DateInterpretation = {
         timestamp: date.getTime(),
         format: format,
+      }
+
+      // Add months property if this is a year-month only date (no day)
+      if (!dayComp) {
+        interpretation.months = (year - 1970) * 12 + (month - 1)
       }
 
       // Avoid duplicates (same format and timestamp)
@@ -466,6 +491,103 @@ export function formatDateString(timestamp: number, format: string): string {
         default:
           throw new Error(`Invalid day format: "${trimmedPart}"`)
       }
+    } else {
+      throw new Error(`Invalid format component: "${trimmedPart}"`)
+    }
+  })
+
+  // Reconstruct the result with proper separator handling
+  if (separator === ', ' && formatParts.length === 3) {
+    // Handle "Month Day, Year" format by joining as "month day, year"
+    return `${resultParts[0]} ${resultParts[1]}, ${resultParts[2]}`
+  } else {
+    return resultParts.join(separator)
+  }
+}
+
+/**
+ * Formats a month number (months since 1970-01) according to the specified format string.
+ * This function only works with year-month formats (no day component).
+ *
+ * @param months - Number of months since 1970-01 (1970-01 = 0, 1970-02 = 1, etc.)
+ * @param format - Format string for year-month only (e.g., "Y-M1", "Y.M2", "Mf Y")
+ * @returns Formatted date string containing only year and month
+ * @throws Error if the format string contains day components or is invalid
+ *
+ * @example
+ * ```ts
+ * formatMonthString(0, 'Y-M1') // '1970-1'
+ * formatMonthString(1, 'Y-M2') // '1970-02'
+ * formatMonthString(12, 'Y-M1') // '1971-1'
+ * formatMonthString(0, 'Mf Y') // 'January 1970'
+ * formatMonthString(11, 'Ms Y') // 'Dec 1970'
+ * ```
+ */
+export function formatMonthString(months: number, format: string): string {
+  // Convert months to year and month
+  const year = Math.floor(months / 12) + 1970
+  const month = (months % 12) + 1
+
+  // Find the separator used in the format
+  let separator: string = ''
+  let formatParts: string[]
+
+  // Check for comma-space pattern first (like "Month Day, Year")
+  if (format.includes(', ')) {
+    separator = ', '
+    const commaParts = format.split(', ')
+    if (commaParts.length === 2) {
+      const spaceParts = commaParts[0].split(' ')
+      if (spaceParts.length === 2) {
+        formatParts = [spaceParts[0], spaceParts[1], commaParts[1]]
+      } else {
+        formatParts = commaParts
+      }
+    } else {
+      formatParts = [format] // Fallback
+    }
+  } else if (format.includes(' ')) {
+    // Check for space separator (like "Month Year")
+    separator = ' '
+    formatParts = format.split(' ')
+  } else {
+    // Try other separators
+    for (const sep of SEPARATORS) {
+      if (sep !== ', ' && format.includes(sep)) {
+        separator = sep
+        break
+      }
+    }
+
+    if (!separator) {
+      throw new Error(
+        `Invalid format: no recognized separator found in "${format}"`,
+      )
+    }
+
+    formatParts = format.split(separator)
+  }
+
+  // Validate that format only contains year and month components
+  for (const part of formatParts) {
+    const trimmedPart = part.trim()
+    if (trimmedPart.startsWith('D')) {
+      throw new Error(
+        `Invalid format for month string: day component "${trimmedPart}" not allowed`,
+      )
+    }
+    if (!trimmedPart.startsWith('Y') && !trimmedPart.startsWith('M')) {
+      throw new Error(`Invalid format component: "${trimmedPart}"`)
+    }
+  }
+
+  // Convert each part
+  const resultParts = formatParts.map((part) => {
+    const trimmedPart = part.trim()
+    if (trimmedPart === 'Y') {
+      return year.toString()
+    } else if (trimmedPart.startsWith('M')) {
+      return numberToMonthName(month, trimmedPart)
     } else {
       throw new Error(`Invalid format component: "${trimmedPart}"`)
     }

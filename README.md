@@ -96,6 +96,10 @@ The library supports conversion and detection of the following number representa
 - Out-of-range circular support for all types in `convertTo`
 - Export version
 
+### 0.2.3
+
+- Add year-month only support
+
 ## To-do
 
 - Loose matching for French and English words

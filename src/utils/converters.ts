@@ -274,8 +274,10 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * @returns The converted string formatted according to the specified case and format
  * @throws Error if the type is not supported or conversion fails
  *
- * @remarks For circular numeral types (latin_letter, greek_letter, month_name, astrological_sign, etc.),
- * automatically handles out-of-range numbers by wrapping them using circular arithmetic.
+ * @remarks For circular numeral types (all types present in numeralLength: latin_letter, greek_letter,
+ * month_name, astrological_sign, etc.), automatically handles out-of-range numbers by wrapping them
+ * using circular arithmetic. The circular handling is included in `convertTo()`,
+ * some specific `toAbc()` functions include it too but many don't
  *
  * @example
  * ```ts

@@ -8,6 +8,7 @@ import {
   CaseType,
   FormatType,
   PrefixType,
+  ZhstType,
 } from '../src/utils/types'
 
 // Helper function to create TypeInfo objects for easier testing
@@ -16,11 +17,13 @@ function typeInfo(
   caseType?: CaseType,
   format?: FormatType,
   prefix?: PrefixType,
+  zhst?: ZhstType,
 ): TypeInfo {
   const info: TypeInfo = { type }
   if (caseType !== undefined) info.case = caseType
   if (format !== undefined) info.format = format
   if (prefix !== undefined) info.prefix = prefix
+  if (zhst !== undefined) info.zhst = zhst
   return info
 }
 
@@ -113,6 +116,14 @@ describe('Converter Functions', () => {
     test('should convert English words', () => {
       expect(convertFrom('one', typeInfo('english_words'))).toBe(1)
       expect(convertFrom('twenty-one', typeInfo('english_words'))).toBe(21)
+    })
+
+    test('should convert as long as valid for that type and regardless of caseType, format, prefix, zhst', () => {
+      expect(convertFrom('oNE', typeInfo('english_words'))).toBe(1)
+      expect(convertFrom('jAn', typeInfo('month_name'))).toBe(1)
+      expect(convertFrom('jAnuaRY', typeInfo('month_name'))).toBe(1)
+      expect(convertFrom('0X0003', typeInfo('hexadecimal'))).toBe(3)
+      expect(convertFrom('0003', typeInfo('hexadecimal'))).toBe(3)
     })
 
     test('should convert Chinese words', () => {

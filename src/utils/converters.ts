@@ -180,11 +180,17 @@ export const typeToFns: Record<
     const result = toFrenchWords(num)
     return applyCase(result, typeInfo?.case)
   },
-  chinese_words: (num) => toChineseWords(num),
-  chinese_financial: (num) => chineseWordstoFinancial(toChineseWords(num)),
+  chinese_words: (num, typeInfo) => {
+    return toChineseWords(num, typeInfo?.zhst === 1)
+  },
+  chinese_financial: (num, typeInfo) => {
+    return chineseWordstoFinancial(toChineseWords(num), typeInfo?.zhst === 1)
+  },
   chinese_heavenly_stem: (num) => toChineseHeavenlyStem(num),
   chinese_earthly_branch: (num) => toChineseEarthlyBranch(num),
-  chinese_solar_term: (num) => toChineseSolarTerm(num),
+  chinese_solar_term: (num, typeInfo) => {
+    return toChineseSolarTerm(num, undefined, typeInfo?.zhst === 1)
+  },
   astrological_sign: (num, typeInfo) => {
     const result = toAstroSign(num)
     return applyCase(result, typeInfo?.case)
@@ -232,7 +238,9 @@ export const typeToFns: Record<
  * Supports all number formats including decimal, binary, octal, hexadecimal, Roman numerals,
  * English/French words, Chinese characters, letters, and more. Case and format properties
  * in TypeInfo are ignored during parsing (they're used for output formatting).
- * @param str - The input string to convert (e.g., 'IV', 'twenty-one', '一百二十三')
+ * For Chinese types, Traditional Chinese input is automatically converted to Simplified
+ * before processing, as the internal conversion functions work with Simplified Chinese.
+ * @param str - The input string to convert (e.g., 'IV', 'twenty-one', '一百二十三', '萬億')
  * @param typeInfo - The type information specifying how to interpret the string
  * @returns The converted number
  * @throws Error if the type is not supported or conversion fails
@@ -245,6 +253,7 @@ export const typeToFns: Record<
  * convertFrom('FF', { type: 'hexadecimal' }) // returns 255
  * convertFrom('January', { type: 'month_name' }) // returns 1
  * convertFrom('一百二十三', { type: 'chinese_words' }) // returns 123
+ * convertFrom('萬億', { type: 'chinese_words' }) // returns 10000000000000 (Traditional converted to Simplified first)
  * convertFrom('Aries', { type: 'astrological_sign' }) // returns 1
  * ```
  */
@@ -268,10 +277,14 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * Supports precise control over output formatting through case and format properties.
  * Case options: 'lower', 'upper', 'sentence' (first letter capitalized), 'title' (each word capitalized).
  * Format options: 'short' or 'long' for dates/months.
+ * For Chinese types, supports Traditional/Simplified script conversion via zhst property:
+ * - zhst: 0 = output Simplified Chinese (default)
+ * - zhst: 1 = output Traditional Chinese (converted from Simplified)
+ * - zhst: 2 = output Simplified Chinese (ambiguous, defaults to Simplified)
  *
  * @param num - The input number to convert (e.g., 4, 21, 123)
- * @param typeInfo - The target type information including type, case, and format specifications
- * @returns The converted string formatted according to the specified case and format
+ * @param typeInfo - The target type information including type, case, format, and zhst specifications
+ * @returns The converted string formatted according to the specified case, format, and Chinese script
  * @throws Error if the type is not supported or conversion fails
  *
  * @remarks For circular numeral types (all types present in numeralLength: latin_letter, greek_letter,
@@ -291,7 +304,9 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * convertTo(1, { type: 'month_name', case: 'sentence', format: 'long' }) // returns 'January'
  * convertTo(1, { type: 'month_name', case: 'upper', format: 'short' }) // returns 'JAN'
  * convertTo(13, { type: 'month_name', case: 'upper', format: 'short' }) // returns 'JAN' (wraps to January)
- * convertTo(123, { type: 'chinese_words' }) // returns '一百二十三'
+ * convertTo(123, { type: 'chinese_words' }) // returns '一百二十三' (Simplified)
+ * convertTo(123, { type: 'chinese_words', zhst: 1 }) // returns '一百二十三' (Traditional, same in this case)
+ * convertTo(10000000000000, { type: 'chinese_words', zhst: 1 }) // returns '萬億' (Traditional)
  * convertTo(1, { type: 'astrological_sign', case: 'lower' }) // returns 'aries'
  * convertTo(13, { type: 'astrological_sign', case: 'lower' }) // returns 'aries' (wraps around)
  * convertTo(7, { type: 'day_of_week', case: 'lower' }) // returns 'sunday' (wraps around)

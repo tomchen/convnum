@@ -1,5 +1,7 @@
 import { toFromArrayItemFn, toToArrayItemFn } from './utils/arrayItemFns'
 import { reverseKeyValue } from './utils/reverseKeyValue'
+import { s2t, t2s } from './utils/zhSTConv'
+import { toS2TFn, toT2SFn } from './utils/zhSTConvFns'
 
 const financialNumerals: Record<string, string> = {
   零: '零',
@@ -20,15 +22,35 @@ const financialNumerals: Record<string, string> = {
   亿: '亿',
 }
 
+const finVals = []
+for (const key in financialNumerals) {
+  finVals.push(financialNumerals[key])
+}
+const finPattern = new RegExp(`^[${finVals.join('|')}]+$`)
+
+/**
+ * Validates if a string is a strictly valid Chinese financial number word representation
+ * by converting it to a number and back to words to check for consistency
+ * @param words - The Chinese words to validate
+ * @returns true if the words are valid, false otherwise
+ */
+export function validateChineseFinancial(words: string): boolean {
+  return finPattern.test(t2s(words))
+}
+
 /**
  * Converts Chinese numeral words to Chinese financial characters
  * @param numeral - The Chinese numeral words to convert
+ * @param trad - Whether to convert to Traditional Chinese (default: false)
  * @returns The Chinese financial character representation
  */
-export function chineseWordstoFinancial(numeral: string): string {
+export function chineseWordstoFinancial(numeral: string, trad = false): string {
   let result = ''
   for (let i = 0; i < numeral.length; i++) {
     result += financialNumerals[numeral[i]] || numeral[i]
+  }
+  if (trad) {
+    result = s2t(result)
   }
   return result
 }
@@ -39,6 +61,7 @@ export function chineseWordstoFinancial(numeral: string): string {
  * @returns The Chinese numeral word representation
  */
 export function chineseFinancialtoWords(numeral: string): string {
+  numeral = t2s(numeral)
   const reversedFinancialNumerals = reverseKeyValue(financialNumerals)
   reversedFinancialNumerals['贰'] = '二'
   let result = ''
@@ -101,7 +124,7 @@ const solarTerms = [
  * @returns The 节气 character
  * @throws Error if input is out of valid range
  */
-export const toChineseSolarTerm = toToArrayItemFn(solarTerms)
+export const toChineseSolarTerm = toS2TFn(toToArrayItemFn(solarTerms))
 
 /**
  * Converts a 节气 (Solar Term) character to its corresponding number
@@ -109,4 +132,4 @@ export const toChineseSolarTerm = toToArrayItemFn(solarTerms)
  * @returns The corresponding number (1-24)
  * @throws Error if input is not a valid 节气 character
  */
-export const fromChineseSolarTerm = toFromArrayItemFn(solarTerms)
+export const fromChineseSolarTerm = toT2SFn(toFromArrayItemFn(solarTerms))

@@ -1,6 +1,29 @@
 import { expect, test, describe } from 'bun:test'
 import { convertFrom, convertTo } from '../src'
-import { TypeInfo } from '../src/utils/types'
+import {
+  CaseType,
+  FormatType,
+  NumType,
+  PrefixType,
+  TypeInfo,
+  ZhstType,
+} from '../src/utils/types'
+
+// Helper function to create TypeInfo objects for easier testing
+function typeInfo(
+  type: NumType,
+  caseType?: CaseType,
+  format?: FormatType,
+  prefix?: PrefixType,
+  zhst?: ZhstType,
+): TypeInfo {
+  const info: TypeInfo = { type }
+  if (caseType !== undefined) info.case = caseType
+  if (format !== undefined) info.format = format
+  if (prefix !== undefined) info.prefix = prefix
+  if (zhst !== undefined) info.zhst = zhst
+  return info
+}
 
 describe('Converter Functions with TypeInfo', () => {
   describe('convertFrom function with TypeInfo', () => {
@@ -346,6 +369,173 @@ describe('Converter Functions with TypeInfo', () => {
       expect(() => convertTo(123, { type: 'invalid' })).toThrow(
         'Cannot convert to invalid type',
       )
+    })
+  })
+
+  describe('Chinese zhst functionality', () => {
+    describe('convertFrom with Chinese types', () => {
+      test('should convert Simplified Chinese as-is', () => {
+        expect(convertFrom('一万', typeInfo('chinese_words'))).toBe(10000)
+        expect(convertFrom('贰拾叁', typeInfo('chinese_financial'))).toBe(23)
+        expect(convertFrom('惊蛰', typeInfo('chinese_solar_term'))).toBe(3)
+      })
+
+      test('should convert Traditional Chinese to Simplified first', () => {
+        expect(convertFrom('一萬', typeInfo('chinese_words'))).toBe(10000)
+        expect(convertFrom('貳拾叄', typeInfo('chinese_financial'))).toBe(23)
+        expect(convertFrom('驚蟄', typeInfo('chinese_solar_term'))).toBe(3)
+      })
+
+      test('should handle ambiguous Chinese text', () => {
+        expect(convertFrom('一百二十三', typeInfo('chinese_words'))).toBe(123)
+        expect(convertFrom('壹佰贰拾叁', typeInfo('chinese_financial'))).toBe(
+          123,
+        )
+        expect(convertFrom('立春', typeInfo('chinese_solar_term'))).toBe(1)
+      })
+
+      test('should NOT convert for non-zhst Chinese types', () => {
+        expect(convertFrom('甲', typeInfo('chinese_heavenly_stem'))).toBe(1)
+        expect(convertFrom('子', typeInfo('chinese_earthly_branch'))).toBe(1)
+      })
+    })
+
+    describe('convertTo with Chinese zhst property', () => {
+      test('should output Simplified Chinese by default', () => {
+        expect(convertTo(10000, typeInfo('chinese_words'))).toBe('一万')
+        expect(convertTo(23, typeInfo('chinese_financial'))).toBe('贰拾叁')
+        expect(convertTo(3, typeInfo('chinese_solar_term'))).toBe('惊蛰')
+      })
+
+      test('should output Simplified Chinese when zhst is 0', () => {
+        expect(
+          convertTo(
+            10000,
+            typeInfo('chinese_words', undefined, undefined, undefined, 0),
+          ),
+        ).toBe('一万')
+        expect(
+          convertTo(
+            23,
+            typeInfo('chinese_financial', undefined, undefined, undefined, 0),
+          ),
+        ).toBe('贰拾叁')
+        expect(
+          convertTo(
+            3,
+            typeInfo('chinese_solar_term', undefined, undefined, undefined, 0),
+          ),
+        ).toBe('惊蛰')
+      })
+
+      test('should output Traditional Chinese when zhst is 1', () => {
+        expect(
+          convertTo(
+            10000,
+            typeInfo('chinese_words', undefined, undefined, undefined, 1),
+          ),
+        ).toBe('一萬')
+        expect(
+          convertTo(
+            23,
+            typeInfo('chinese_financial', undefined, undefined, undefined, 1),
+          ),
+        ).toBe('貳拾叄')
+        expect(
+          convertTo(
+            3,
+            typeInfo('chinese_solar_term', undefined, undefined, undefined, 1),
+          ),
+        ).toBe('驚蟄')
+      })
+
+      test('should output Simplified Chinese when zhst is 2 (ambiguous)', () => {
+        expect(
+          convertTo(
+            123,
+            typeInfo('chinese_words', undefined, undefined, undefined, 2),
+          ),
+        ).toBe('一百二十三')
+        expect(
+          convertTo(
+            123,
+            typeInfo('chinese_financial', undefined, undefined, undefined, 2),
+          ),
+        ).toBe('壹佰贰拾叁')
+        expect(
+          convertTo(
+            1,
+            typeInfo('chinese_solar_term', undefined, undefined, undefined, 2),
+          ),
+        ).toBe('立春')
+      })
+
+      test('should NOT apply zhst conversion for non-zhst Chinese types', () => {
+        expect(convertTo(1, typeInfo('chinese_heavenly_stem'))).toBe('甲')
+        expect(convertTo(1, typeInfo('chinese_earthly_branch'))).toBe('子')
+      })
+    })
+
+    describe('Round-trip conversions with Chinese zhst', () => {
+      test('should work for Simplified Chinese', () => {
+        const testCases = [
+          { value: 10000, type: 'chinese_words' as NumType, expected: '一万' },
+          {
+            value: 23,
+            type: 'chinese_financial' as NumType,
+            expected: '贰拾叁',
+          },
+          { value: 3, type: 'chinese_solar_term' as NumType, expected: '惊蛰' },
+        ]
+
+        testCases.forEach(({ value, type, expected }) => {
+          const typeInfoObj = typeInfo(type, undefined, undefined, undefined, 0)
+          const converted = convertTo(value, typeInfoObj)
+          expect(converted).toBe(expected)
+          const backToNum = convertFrom(converted, typeInfoObj)
+          expect(backToNum).toBe(value)
+        })
+      })
+
+      test('should work for Traditional Chinese', () => {
+        const testCases = [
+          { value: 10000, type: 'chinese_words' as NumType, expected: '一萬' },
+          {
+            value: 23,
+            type: 'chinese_financial' as NumType,
+            expected: '貳拾叄',
+          },
+          { value: 3, type: 'chinese_solar_term' as NumType, expected: '驚蟄' },
+        ]
+
+        testCases.forEach(({ value, type, expected }) => {
+          const typeInfoObj = typeInfo(type, undefined, undefined, undefined, 1)
+          const converted = convertTo(value, typeInfoObj)
+          expect(converted).toBe(expected)
+          const backToNum = convertFrom(converted, typeInfoObj)
+          expect(backToNum).toBe(value)
+        })
+      })
+
+      test('should handle cross-script conversions', () => {
+        // Traditional input, Simplified output
+        const traditionalInput = '一萬'
+        const num = convertFrom(traditionalInput, typeInfo('chinese_words'))
+        const simplifiedOutput = convertTo(
+          num,
+          typeInfo('chinese_words', undefined, undefined, undefined, 0),
+        )
+        expect(simplifiedOutput).toBe('一万')
+
+        // Simplified input, Traditional output
+        const simplifiedInput = '一万'
+        const num2 = convertFrom(simplifiedInput, typeInfo('chinese_words'))
+        const traditionalOutput = convertTo(
+          num2,
+          typeInfo('chinese_words', undefined, undefined, undefined, 1),
+        )
+        expect(traditionalOutput).toBe('一萬')
+      })
     })
   })
 })

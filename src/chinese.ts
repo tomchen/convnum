@@ -1,3 +1,5 @@
+import { isZhTOrS, s2t, t2s } from './utils/zhSTConv'
+
 function getUnit(pos: number): string {
   const units = ['', '十', '百', '千', '万', '十', '百', '千', '亿']
   const cycle = pos % 8
@@ -10,9 +12,10 @@ const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '
 /**
  * Converts a number to Chinese numeral words (can handle negative numbers and numbers with decimal point)
  * @param num - The number to convert
+ * @param trad - Whether to convert to Traditional Chinese (default: false)
  * @returns The Chinese numeral word representation
  */
-export function toChineseWords(num: number): string {
+export function toChineseWords(num: number, trad = false): string {
   if (typeof num !== 'number' || !isFinite(num)) {
     throw new Error(`Invalid input: ${num}`)
   }
@@ -59,6 +62,10 @@ export function toChineseWords(num: number): string {
     result = '负' + result
   }
 
+  if (trad) {
+    result = s2t(result)
+  }
+
   return result
 }
 
@@ -76,6 +83,7 @@ const numMap: Record<string, number> = {
  * @throws Error if input contains invalid characters
  */
 export function fromChineseWords(words: string): number {
+  words = t2s(words)
   if (
     !/^[负]?[零一二三四五六七八九十百千万亿]+([点][零一二三四五六七八九]+)?$/.test(
       words,
@@ -144,8 +152,9 @@ export function fromChineseWords(words: string): number {
  */
 export function validateChineseWords(words: string): boolean {
   try {
+    const zhst = isZhTOrS(words)
     const num = fromChineseWords(words)
-    const convertedBack = toChineseWords(num)
+    const convertedBack = toChineseWords(num, zhst === 1)
     return words === convertedBack
   } catch {
     return false

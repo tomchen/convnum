@@ -6,6 +6,7 @@ import {
   NumType,
   PrefixType,
   TypeInfo,
+  ZhstType,
 } from '../src/utils/types'
 
 // Helper function to create TypeInfo objects for easier testing
@@ -14,6 +15,7 @@ function typeInfo(
   caseType?: CaseType,
   format?: FormatType,
   prefix?: PrefixType,
+  zhst?: ZhstType,
 ): TypeInfo {
   const info: TypeInfo = { type }
   if (caseType !== undefined) {
@@ -24,6 +26,9 @@ function typeInfo(
   }
   if (prefix !== undefined) {
     info.prefix = prefix
+  }
+  if (zhst !== undefined) {
+    info.zhst = zhst
   }
   return info
 }
@@ -183,15 +188,23 @@ describe('getTypes function', () => {
 
   describe('Chinese types', () => {
     test('should detect Chinese words', () => {
-      expect(getTypes('一')).toContainEqual(typeInfo('chinese_words'))
-      expect(getTypes('十一')).toContainEqual(typeInfo('chinese_words'))
-      expect(getTypes('一百二十三')).toContainEqual(typeInfo('chinese_words'))
+      expect(getTypes('一')).toContainEqual(
+        typeInfo('chinese_words', undefined, undefined, undefined, 2),
+      )
+      expect(getTypes('十一')).toContainEqual(
+        typeInfo('chinese_words', undefined, undefined, undefined, 2),
+      )
+      expect(getTypes('一百二十三')).toContainEqual(
+        typeInfo('chinese_words', undefined, undefined, undefined, 2),
+      )
     })
 
     test('should detect Chinese financial', () => {
-      expect(getTypes('壹')).toContainEqual(typeInfo('chinese_financial'))
+      expect(getTypes('壹')).toContainEqual(
+        typeInfo('chinese_financial', undefined, undefined, undefined, 2),
+      )
       expect(getTypes('壹佰贰拾叁')).toContainEqual(
-        typeInfo('chinese_financial'),
+        typeInfo('chinese_financial', undefined, undefined, undefined, 0),
       )
     })
 
@@ -206,8 +219,12 @@ describe('getTypes function', () => {
     })
 
     test('should detect Chinese solar terms', () => {
-      expect(getTypes('立春')).toContainEqual(typeInfo('chinese_solar_term'))
-      expect(getTypes('夏至')).toContainEqual(typeInfo('chinese_solar_term'))
+      expect(getTypes('立春')).toContainEqual(
+        typeInfo('chinese_solar_term', undefined, undefined, undefined, 2),
+      )
+      expect(getTypes('夏至')).toContainEqual(
+        typeInfo('chinese_solar_term', undefined, undefined, undefined, 2),
+      )
     })
   })
 
@@ -232,8 +249,12 @@ describe('getTypes function', () => {
 
     test('should detect overlapping Chinese types', () => {
       const result = getTypes('零')
-      expect(result).toContainEqual(typeInfo('chinese_words'))
-      expect(result).toContainEqual(typeInfo('chinese_financial'))
+      expect(result).toContainEqual(
+        typeInfo('chinese_words', undefined, undefined, undefined, 2),
+      )
+      expect(result).toContainEqual(
+        typeInfo('chinese_financial', undefined, undefined, undefined, 2),
+      )
       expect(result.length).toBe(2)
     })
   })

@@ -8,6 +8,7 @@ import {
   fromChineseHeavenlyStem,
   fromChineseEarthlyBranch,
   fromChineseSolarTerm,
+  validateChineseFinancial,
 } from '../chinese2'
 import { fromAstroSign } from '../astrosign'
 import {
@@ -18,6 +19,7 @@ import {
 } from '../alphabet'
 import { fromMonth, fromDayOfWeek, toMonth, toDayOfWeek } from '../datetime'
 import { capitalizeFirstLetter } from './letterFns'
+import { isZhTOrS } from './zhSTConv'
 import {
   NumType,
   VALID_NUM_TYPES,
@@ -25,6 +27,7 @@ import {
   CaseType,
   FormatType,
   PrefixType,
+  ZhstType,
 } from './types'
 
 /**
@@ -158,7 +161,7 @@ export const typeValidators: Record<NumType, (str: string) => boolean> = {
   english_words: (str) => validateEnglishWords(str), // currently strict validation
   french_words: (str) => validateFrenchWords(str), // currently strict validation
   chinese_words: (str) => validateChineseWords(str), // currently strict validation
-  chinese_financial: (str) => /^[零壹贰叁肆伍陆柒捌玖拾佰仟万亿]+$/.test(str),
+  chinese_financial: (str) => validateChineseFinancial(str),
   chinese_heavenly_stem: (str) => {
     try {
       fromChineseHeavenlyStem(str)
@@ -258,6 +261,22 @@ function createTypeInfo(str: string, type: NumType): TypeInfo {
 
   // Types that have prefix property
   const prefixTypes = ['hexadecimal', 'binary', 'octal']
+
+  // Types that need Chinese script detection (Traditional/Simplified)
+  const chineseZhstTypes = [
+    'chinese_words',
+    'chinese_financial',
+    'chinese_solar_term',
+  ]
+
+  // Detect Chinese script type first for applicable types
+  if (chineseZhstTypes.includes(type)) {
+    const zhstResult = isZhTOrS(str)
+    // Only set zhst for definitive results (0, 1, 2), not for mixed (-1) or invalid (undefined)
+    if (zhstResult === 0 || zhstResult === 1 || zhstResult === 2) {
+      typeInfo.zhst = zhstResult as ZhstType
+    }
+  }
 
   // Detect prefix first for base types
   if (prefixTypes.includes(type)) {

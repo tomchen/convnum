@@ -106,6 +106,7 @@ The library supports conversion and detection of the following number representa
 - Fix nonexistent YDM
 - Add non-year-month support (days property to DateInterpretation and formatDayString function)
 - Traditional Chinese support
+- getTypes and parseDateString's result ordering
 
 ## To-do
 

@@ -3,13 +3,13 @@ import { expect, test, describe } from 'bun:test'
 import { convertFrom, convertTo, typeFromFns, typeToFns } from '../src'
 import {
   NumType,
-  VALID_NUM_TYPES,
   TypeInfo,
   CaseType,
   FormatType,
   PrefixType,
   ZhstType,
 } from '../src/utils/types'
+import { VALID_NUM_TYPES } from '../src/utils/numType'
 
 // Helper function to create TypeInfo objects for easier testing
 function typeInfo(

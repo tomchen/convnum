@@ -22,13 +22,13 @@ import { capitalizeFirstLetter } from './letterFns'
 import { isZhTOrS } from './zhSTConv'
 import {
   NumType,
-  VALID_NUM_TYPES,
   TypeInfo,
   CaseType,
   FormatType,
   PrefixType,
   ZhstType,
 } from './types'
+import { VALID_NUM_TYPES } from './numType'
 
 /**
  * Determines the case of a string
@@ -358,7 +358,8 @@ export function hasType(str: string, targetType: NumType): boolean {
  * Returns TypeInfo objects that include the detected type along with contextual properties
  * like case (lower, upper, sentence, title) and format (short, long) when applicable.
  * @param str - The input string to identify and analyze
- * @returns An array of all possible TypeInfo objects the string could be, including detected case and format properties
+ * @returns An array of all possible TypeInfo objects the string could be, including detected case and format properties,
+ * sorted by type priority (see VALID_NUM_TYPES)
  * @example
  * ```ts
  * getTypes('123') // returns [{ type: 'decimal' }, { type: 'octal' }, { type: 'hexadecimal', case: 'lower' }]

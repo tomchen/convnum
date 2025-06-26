@@ -8,6 +8,7 @@ import {
   TypeInfo,
   ZhstType,
 } from '../src/utils/types'
+import { VALID_NUM_TYPES } from '../src/utils/numType'
 
 // Helper function to create TypeInfo objects for easier testing
 function typeInfo(
@@ -450,5 +451,68 @@ describe('hasType function', () => {
     expect(hasType('', 'empty')).toBe(true)
     expect(hasType('invalid-string', 'unknown')).toBe(true)
     expect(hasType(null as unknown as string, 'invalid')).toBe(true)
+  })
+})
+
+describe('Result ordering', () => {
+  test('should return types in VALID_NUM_TYPES order', () => {
+    // Use a string that matches multiple types to test ordering
+    // 'A' matches: decimal (nope), latin_letter, greek_letter (nope), ..., hexadecimal
+    const result = getTypes('A')
+
+    // Extract the types from the result
+    const resultTypes = result.map((r) => r.type)
+
+    // Get the indices of these types in VALID_NUM_TYPES
+    const expectedOrder = VALID_NUM_TYPES.filter((type) =>
+      resultTypes.includes(type),
+    )
+
+    // Check that the result types are in the same order as VALID_NUM_TYPES
+    expect(resultTypes).toEqual(expectedOrder)
+  })
+
+  test('should return types in VALID_NUM_TYPES order for multiple matches', () => {
+    // Test with another example that has multiple matches
+    // 'Dec' matches: month_name, hexadecimal (in that order in VALID_NUM_TYPES)
+    const result = getTypes('Dec')
+    const resultTypes = result.map((r) => r.type)
+
+    // Verify both types are present
+    expect(resultTypes).toContain('month_name')
+    expect(resultTypes).toContain('hexadecimal')
+
+    // Verify they appear in the same order as VALID_NUM_TYPES
+    const monthIndex = VALID_NUM_TYPES.indexOf('month_name')
+    const hexIndex = VALID_NUM_TYPES.indexOf('hexadecimal')
+
+    if (monthIndex >= 0 && hexIndex >= 0 && monthIndex < hexIndex) {
+      // If month_name comes before hexadecimal in VALID_NUM_TYPES, it should in results too
+      const monthResultIndex = resultTypes.indexOf('month_name')
+      const hexResultIndex = resultTypes.indexOf('hexadecimal')
+      expect(monthResultIndex).toBeLessThan(hexResultIndex)
+    }
+  })
+
+  test('should return types in VALID_NUM_TYPES order for Chinese overlaps', () => {
+    // Test with Chinese character that matches multiple types
+    // '零' matches: chinese_words, chinese_financial
+    const result = getTypes('零')
+    const resultTypes = result.map((r) => r.type)
+
+    // Verify both types are present
+    expect(resultTypes).toContain('chinese_words')
+    expect(resultTypes).toContain('chinese_financial')
+
+    // Verify they appear in the same order as VALID_NUM_TYPES
+    const wordsIndex = VALID_NUM_TYPES.indexOf('chinese_words')
+    const financialIndex = VALID_NUM_TYPES.indexOf('chinese_financial')
+
+    if (wordsIndex >= 0 && financialIndex >= 0 && wordsIndex < financialIndex) {
+      // If chinese_words comes before chinese_financial in VALID_NUM_TYPES, it should in results too
+      const wordsResultIndex = resultTypes.indexOf('chinese_words')
+      const financialResultIndex = resultTypes.indexOf('chinese_financial')
+      expect(wordsResultIndex).toBeLessThan(financialResultIndex)
+    }
   })
 })

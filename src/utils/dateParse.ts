@@ -4,6 +4,7 @@ import {
   ParseDateResult,
   SEPARATORS,
 } from './dateFormat'
+import { compareDateFormatOrder } from './orders'
 
 /**
  * Month format types and their patterns
@@ -179,127 +180,6 @@ function generateAllCombinations(arrays: DateComponent[][]): DateComponent[][] {
 }
 
 /**
- * Compare two date format strings for sorting purposes.
- * Priority order:
- * 1. Y-M-D variations (replacing - with ., /, ,)
- * 2. D-M-Y variations
- * 3. M-D-Y variations
- * 4. Y-M variations
- * 5. M-Y variations
- * 6. M-D variations
- * 7. D-M variations
- * 8. Named month formats (by pattern similarity)
- *
- * Within each category, formats are sorted by separator (-, ., /, ,, then space/comma-space),
- * then by format specificity (M2/D2 before M1/D1)
- */
-function compareFormats(formatA: string, formatB: string): number {
-  const patternA = getFormatPattern(formatA)
-  const patternB = getFormatPattern(formatB)
-
-  // First compare by pattern priority
-  const priorityDiff = patternA.priority - patternB.priority
-  if (priorityDiff !== 0) return priorityDiff
-
-  // Then by separator priority within same pattern
-  const separatorDiff = patternA.separatorPriority - patternB.separatorPriority
-  if (separatorDiff !== 0) return separatorDiff
-
-  // Finally by format specificity (M2/D2 should come before M1/D1)
-  return patternA.specificityScore - patternB.specificityScore
-}
-
-/**
- * Extract pattern information from a date format string
- */
-function getFormatPattern(format: string): {
-  priority: number
-  separatorPriority: number
-  specificityScore: number
-} {
-  // Normalize format by extracting the pattern structure
-  const normalizedFormat = format
-    .replace(/M[a-z]*[12]?/g, 'M') // M, M1, M2, Mf, Ms, etc. -> M
-    .replace(/D[12]?/g, 'D') // D, D1, D2 -> D
-    .replace(/Y/g, 'Y') // Y -> Y
-
-  // Define pattern priorities
-  const patternPriorities: { [key: string]: number } = {
-    'Y-M-D': 1,
-    'Y.M.D': 1,
-    'Y/M/D': 1,
-    'Y,M,D': 1,
-    'D-M-Y': 2,
-    'D.M.Y': 2,
-    'D/M/Y': 2,
-    'D,M,Y': 2,
-    'M-D-Y': 3,
-    'M.D.Y': 3,
-    'M/D/Y': 3,
-    'M,D,Y': 3,
-    'Y-M': 4,
-    'Y.M': 4,
-    'Y/M': 4,
-    'Y,M': 4,
-    'M-Y': 5,
-    'M.Y': 5,
-    'M/Y': 5,
-    'M,Y': 5,
-    'M-D': 6,
-    'M.D': 6,
-    'M/D': 6,
-    'M,D': 6,
-    'D-M': 7,
-    'D.M': 7,
-    'D/M': 7,
-    'D,M': 7,
-  }
-
-  // Handle special named month formats (space separators, comma-space)
-  const namedMonthPatterns: { [key: string]: number } = {
-    'M Y': 8, // "January 2023"
-    'Y-M': 9, // "2023-January"
-    'M-Y': 10, // "January-2023"
-    'M D, Y': 11, // "January 1, 2023"
-  }
-
-  const priority =
-    patternPriorities[normalizedFormat] ||
-    namedMonthPatterns[normalizedFormat] ||
-    999
-
-  // Get separator priority (- first, then ., /, ,, then space/comma-space)
-  let separatorPriority = 0
-  if (format.includes('-')) separatorPriority = 0
-  else if (format.includes('.')) separatorPriority = 1
-  else if (format.includes('/')) separatorPriority = 2
-  else if (format.includes(',') && !format.includes(', ')) separatorPriority = 3
-  else if (format.includes(', ')) separatorPriority = 5
-  else if (format.includes(' ')) separatorPriority = 4
-
-  // Calculate specificity score (M2/D2 should come before M1/D1)
-  let specificityScore = 0
-  const m2Count = (format.match(/M2/g) || []).length
-  const d2Count = (format.match(/D2/g) || []).length
-  const m1Count = (format.match(/M1/g) || []).length
-  const d1Count = (format.match(/D1/g) || []).length
-
-  // Higher specificity (M2/D2) gets lower score (sorts first)
-  specificityScore = m1Count + d1Count - (m2Count + d2Count)
-
-  // For named months, use alphabetical order as secondary sort
-  if (priority >= 8) {
-    specificityScore += format.localeCompare(format) * 0.01
-  }
-
-  return {
-    priority,
-    separatorPriority,
-    specificityScore,
-  }
-}
-
-/**
  * Parses a date string and returns all possible interpretations with their corresponding timestamps.
  * Each ambiguous date string may have multiple valid interpretations, each with its own timestamp.
  * Supports various date formats including Y-M-D, D-M-Y, M-D-Y, Y-M, M-Y, M-D, D-M.
@@ -315,7 +195,7 @@ function getFormatPattern(format: string): {
  *
  * @param dateStr - The date string to parse (e.g., "2023-01-05", "25.12.2023", "Jan 15, 2023")
  * @returns Array of all possible interpretations, each with timestamp, format, and optionally months,
- * sorted by format priority (Y-M-D, D-M-Y, M-D-Y, Y-M, M-Y, M-D, D-M)
+ * sorted by format priority (see {@link compareDateFormatOrder} function)
  * @throws Error if the date string format is not recognized or invalid
  *
  * @example
@@ -529,7 +409,7 @@ export function parseDateString(dateStr: string): ParseDateResult {
 
   // Sort interpretations by format in the specified order
   interpretations.sort((a, b) => {
-    return compareFormats(a.format, b.format)
+    return compareDateFormatOrder(a.format, b.format)
   })
 
   return interpretations

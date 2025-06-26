@@ -28,7 +28,7 @@ import {
   PrefixType,
   ZhstType,
 } from './types'
-import { VALID_NUM_TYPES } from './numType'
+import { VALID_NUM_TYPES } from './orders'
 
 /**
  * Determines the case of a string
@@ -359,7 +359,7 @@ export function hasType(str: string, targetType: NumType): boolean {
  * like case (lower, upper, sentence, title) and format (short, long) when applicable.
  * @param str - The input string to identify and analyze
  * @returns An array of all possible TypeInfo objects the string could be, including detected case and format properties,
- * sorted by type priority (see VALID_NUM_TYPES)
+ * sorted by type priority (see {@link VALID_NUM_TYPES})
  * @example
  * ```ts
  * getTypes('123') // returns [{ type: 'decimal' }, { type: 'octal' }, { type: 'hexadecimal', case: 'lower' }]

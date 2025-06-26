@@ -9,7 +9,7 @@ import {
   PrefixType,
   ZhstType,
 } from '../src/utils/types'
-import { VALID_NUM_TYPES } from '../src/utils/numType'
+import { VALID_NUM_TYPES } from '../src/utils/orders'
 
 // Helper function to create TypeInfo objects for easier testing
 function typeInfo(

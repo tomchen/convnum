@@ -14,12 +14,12 @@ export * from './utils/converters'
 export * from './utils/dateFormat'
 export * from './utils/dateParse'
 export * from './utils/getTypes'
-export * from './utils/numType'
+export * from './utils/orders'
 export * from './utils/types'
 export * from './utils/zhSTConv'
 
 /**
- * The version of the package
+ * The version of `convnum` package
  */
 export const version =
   typeof __VERSION__ === 'string' ? __VERSION__ : '0.0.0-dev'

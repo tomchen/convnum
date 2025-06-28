@@ -1,6 +1,12 @@
 /* eslint-disable compat/compat */
 import { expect, test, describe } from 'bun:test'
-import { convertFrom, convertTo, typeFromFns, typeToFns } from '../src'
+import {
+  convertFrom,
+  convertTo,
+  anyToNumber,
+  typeFromFns,
+  typeToFns,
+} from '../src'
 import {
   NumType,
   TypeInfo,
@@ -514,6 +520,78 @@ describe('Converter Functions', () => {
           const converted = convertTo(number, typeInfoObj)
           expect(converted).toBe(input)
         })
+      })
+    })
+  })
+
+  describe('Shortcut functions', () => {
+    describe('convertFrom with NumType string', () => {
+      test('should work with string type instead of TypeInfo object', () => {
+        expect(convertFrom('123', 'decimal')).toBe(123)
+        expect(convertFrom('IV', 'roman')).toBe(4)
+        expect(convertFrom('twenty-one', 'english_words')).toBe(21)
+        expect(convertFrom('A', 'latin_letter')).toBe(1)
+        expect(convertFrom('January', 'month_name')).toBe(1)
+        expect(convertFrom('FF', 'hexadecimal')).toBe(255)
+      })
+
+      test('should throw error for unsupported string types', () => {
+        expect(() => convertFrom('123', 'unsupported_type' as NumType)).toThrow(
+          'Unsupported type: unsupported_type',
+        )
+      })
+    })
+
+    describe('convertTo with NumType string', () => {
+      test('should work with string type instead of TypeInfo object', () => {
+        expect(convertTo(123, 'decimal')).toBe('123')
+        expect(convertTo(4, 'roman')).toBe('IV')
+        expect(convertTo(21, 'english_words')).toBe('twenty-one')
+        expect(convertTo(1, 'latin_letter')).toBe('a') // Default is lowercase
+        expect(convertTo(1, 'month_name')).toBe('January')
+        expect(convertTo(255, 'hexadecimal')).toBe('ff') // Default is lowercase
+      })
+
+      test('should throw error for unsupported string types', () => {
+        expect(() => convertTo(123, 'unsupported_type' as NumType)).toThrow(
+          'Unsupported type: unsupported_type',
+        )
+      })
+    })
+
+    describe('anyToNumber function', () => {
+      test('should detect and convert decimal numbers', () => {
+        expect(anyToNumber('123')).toBe(123)
+        expect(anyToNumber('456.78')).toBe(456.78)
+        expect(anyToNumber('-123')).toBe(-123)
+      })
+
+      test('should detect and convert Roman numerals', () => {
+        expect(anyToNumber('IV')).toBe(4)
+        expect(anyToNumber('XVI')).toBe(16)
+        expect(anyToNumber('MCMXC')).toBe(1990)
+      })
+
+      test('should detect and convert English words', () => {
+        expect(anyToNumber('twenty-one')).toBe(21)
+        expect(anyToNumber('one hundred')).toBe(100)
+      })
+
+      test('should detect and convert letters', () => {
+        expect(anyToNumber('A')).toBe(10) // 'A' is detected as hexadecimal
+        expect(anyToNumber('G')).toBe(7) // 'G' is detected as latin letter
+        expect(anyToNumber('Z')).toBe(26) // 'Z' is detected as latin letter
+      })
+
+      test('should detect and convert hexadecimal', () => {
+        expect(anyToNumber('0xFF')).toBe(255)
+        expect(anyToNumber('0x10')).toBe(16)
+      })
+
+      test('should throw error for unrecognized strings', () => {
+        expect(() => anyToNumber('xyz123')).toThrow(
+          'Failed to convert "xyz123" from type "unknown": Cannot convert unknown type',
+        )
       })
     })
   })

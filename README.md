@@ -116,9 +116,14 @@ The library supports conversion and detection of the following number representa
 
 - Add Greek letter English name and Hebrew letter support
 
+### 0.2.7
+
+- anyToNumber function
+- convertFrom and convertTo's 2nd parameter can be string of type
+
 ## To-do
 
-- Add 0-padding info to TypeInfo
+- Add (0-padded) digit count info to TypeInfo for decimal, octal, hexadecimal and binary
 - Loose matching for French and English words
 - _Maybe not in this lib: braille and morse code support_
 

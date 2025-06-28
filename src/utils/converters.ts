@@ -33,6 +33,7 @@ import { toMonth, fromMonth, toDayOfWeek, fromDayOfWeek } from '../datetime'
 import { toBin, fromBin, toOct, fromOct, toHex, fromHex } from '../bases'
 import { NumType, TypeInfo } from './types'
 import { numeralLength, toBasicRange } from './circular'
+import { getTypes } from './getTypes'
 
 /**
  * Applies case transformation to a string based on the specified case type
@@ -255,7 +256,7 @@ export const typeToFns: Record<
  * For Chinese types, Traditional Chinese input is automatically converted to Simplified
  * before processing, as the internal conversion functions work with Simplified Chinese.
  * @param str - The input string to convert (e.g., 'IV', 'twenty-one', '一百二十三', '萬億')
- * @param typeInfo - The type information specifying how to interpret the string
+ * @param typeInfo - The type information object specifying how to interpret the string, or the type name as a string
  * @returns The converted number
  * @throws Error if the type is not supported or conversion fails
  * @example
@@ -271,7 +272,11 @@ export const typeToFns: Record<
  * convertFrom('Aries', { type: 'astrological_sign' }) // returns 1
  * ```
  */
-export function convertFrom(str: string, typeInfo: TypeInfo): number {
+export function convertFrom(str: string, typeInfo: TypeInfo | NumType): number {
+  if (typeof typeInfo === 'string') {
+    typeInfo = { type: typeInfo }
+  }
+
   const fromFn = typeFromFns[typeInfo.type]
   if (!fromFn) {
     throw new Error(`Unsupported type: ${typeInfo.type}`)
@@ -287,6 +292,28 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
 }
 
 /**
+ * Converts any string to a number
+ *
+ * It detects the type of any input string and converts it to a number with the most likely type
+ * @param str - The input string to convert (e.g., 'IV', 'twenty-one', '一百二十三', '萬億')
+ * @returns The converted number
+ * @throws Error if the type is not supported or conversion fails
+ * @remarks This function is a shortcut for `convertFrom(str, getTypes(str)[0])`
+ * @example
+ * ```ts
+ * anyToNumber('123') // returns 123
+ * anyToNumber('IV') // returns 4
+ * anyToNumber('twenty-one') // returns 21
+ */
+export function anyToNumber(str: string): number {
+  const types = getTypes(str)
+  if (types.length === 0) {
+    throw new Error(`No valid types found for "${str}"`)
+  }
+  return convertFrom(str, types[0])
+}
+
+/**
  * Generalized function to convert a number to a string based on the specified type.
  * Supports precise control over output formatting through case and format properties.
  * Case options: 'lower', 'upper', 'sentence' (first letter capitalized), 'title' (each word capitalized).
@@ -297,7 +324,7 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * - zhst: 2 = output Simplified Chinese (ambiguous, defaults to Simplified)
  *
  * @param num - The input number to convert (e.g., 4, 21, 123)
- * @param typeInfo - The target type information including type, case, format, and zhst specifications
+ * @param typeInfo - The target type information object including type, case, format, and zhst specifications, or the type name as a string
  * @returns The converted string formatted according to the specified case, format, and Chinese script
  * @throws Error if the type is not supported or conversion fails
  *
@@ -326,7 +353,11 @@ export function convertFrom(str: string, typeInfo: TypeInfo): number {
  * convertTo(7, { type: 'day_of_week', case: 'lower' }) // returns 'sunday' (wraps around)
  * ```
  */
-export function convertTo(num: number, typeInfo: TypeInfo): string {
+export function convertTo(num: number, typeInfo: TypeInfo | NumType): string {
+  if (typeof typeInfo === 'string') {
+    typeInfo = { type: typeInfo }
+  }
+
   const toFn = typeToFns[typeInfo.type]
   if (!toFn) {
     throw new Error(`Unsupported type: ${typeInfo.type}`)

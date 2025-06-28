@@ -16,6 +16,8 @@ import {
   fromGreekLetter,
   fromCyrillicLetter,
   natoAlphabet,
+  fromHebrewLetter,
+  fromGreekLetterEnglishName,
 } from '../alphabet'
 import { fromMonth, fromDayOfWeek, toMonth, toDayOfWeek } from '../datetime'
 import { capitalizeFirstLetter } from './letterFns'
@@ -230,6 +232,24 @@ export const typeValidators: Record<NumType, (str: string) => boolean> = {
       return false
     }
   },
+  hebrew_letter: (str) => {
+    if (!/^[א-ת]$/.test(str)) return false
+    try {
+      fromHebrewLetter(str)
+      return true
+    } catch {
+      return false
+    }
+  },
+  greek_letter_english_name: (str) => {
+    if (!/^[A-Za-z]+$/.test(str)) return false
+    try {
+      fromGreekLetterEnglishName(str)
+      return true
+    } catch {
+      return false
+    }
+  },
   // Special types
   invalid: () => false,
   empty: () => false,
@@ -254,6 +274,7 @@ function createTypeInfo(str: string, type: NumType): TypeInfo {
     'french_words',
     'astrological_sign',
     'nato_phonetic',
+    'greek_letter_english_name',
   ]
 
   // Types that have both case and format properties

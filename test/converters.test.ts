@@ -57,7 +57,9 @@ describe('Converter Functions', () => {
         'day_of_week',
         'latin_letter',
         'greek_letter',
+        'greek_letter_english_name',
         'cyrillic_letter',
+        'hebrew_letter',
         'invalid',
         'empty',
         'unknown',
@@ -89,6 +91,8 @@ describe('Converter Functions', () => {
         'day_of_week',
         'latin_letter',
         'greek_letter',
+        'greek_letter_english_name',
+        'hebrew_letter',
         'cyrillic_letter',
       ] as NumType[]
 
@@ -129,6 +133,28 @@ describe('Converter Functions', () => {
     test('should convert Chinese words', () => {
       expect(convertFrom('一', typeInfo('chinese_words'))).toBe(1)
       expect(convertFrom('一百二十三', typeInfo('chinese_words'))).toBe(123)
+    })
+
+    test('should convert Hebrew letters', () => {
+      expect(convertFrom('א', typeInfo('hebrew_letter'))).toBe(1)
+      expect(convertFrom('ב', typeInfo('hebrew_letter'))).toBe(2)
+      expect(convertFrom('ת', typeInfo('hebrew_letter'))).toBe(22)
+    })
+
+    test('should convert Greek letter English names', () => {
+      expect(convertFrom('Alpha', typeInfo('greek_letter_english_name'))).toBe(
+        1,
+      )
+      expect(convertFrom('Beta', typeInfo('greek_letter_english_name'))).toBe(2)
+      expect(convertFrom('Omega', typeInfo('greek_letter_english_name'))).toBe(
+        24,
+      )
+      expect(convertFrom('alpha', typeInfo('greek_letter_english_name'))).toBe(
+        1,
+      )
+      expect(convertFrom('OMEGA', typeInfo('greek_letter_english_name'))).toBe(
+        24,
+      )
     })
 
     test('should throw error for unsupported types', () => {
@@ -180,6 +206,18 @@ describe('Converter Functions', () => {
     test('should convert to Chinese words', () => {
       expect(convertTo(1, typeInfo('chinese_words'))).toBe('一')
       expect(convertTo(123, typeInfo('chinese_words'))).toBe('一百二十三')
+    })
+
+    test('should convert to Hebrew letters', () => {
+      expect(convertTo(1, typeInfo('hebrew_letter'))).toBe('א')
+      expect(convertTo(2, typeInfo('hebrew_letter'))).toBe('ב')
+      expect(convertTo(22, typeInfo('hebrew_letter'))).toBe('ת')
+    })
+
+    test('should convert to Greek letter English names', () => {
+      expect(convertTo(1, typeInfo('greek_letter_english_name'))).toBe('Alpha')
+      expect(convertTo(2, typeInfo('greek_letter_english_name'))).toBe('Beta')
+      expect(convertTo(24, typeInfo('greek_letter_english_name'))).toBe('Omega')
     })
 
     test('should throw error for unsupported types', () => {
@@ -237,6 +275,23 @@ describe('Converter Functions', () => {
       const back = convertFrom(converted, typeInfo('chinese_words'))
       expect(back).toBe(original)
     })
+
+    test('should work for Hebrew letters', () => {
+      const original = 10
+      const converted = convertTo(original, typeInfo('hebrew_letter'))
+      const back = convertFrom(converted, typeInfo('hebrew_letter'))
+      expect(back).toBe(original)
+    })
+
+    test('should work for Greek letter English names', () => {
+      const original = 15
+      const converted = convertTo(
+        original,
+        typeInfo('greek_letter_english_name'),
+      )
+      const back = convertFrom(converted, typeInfo('greek_letter_english_name'))
+      expect(back).toBe(original)
+    })
   })
 
   describe('Case and format functionality', () => {
@@ -275,6 +330,22 @@ describe('Converter Functions', () => {
       expect(convertTo(21, typeInfo('english_words', 'sentence'))).toBe(
         'Twenty-one',
       )
+
+      expect(convertTo(1, typeInfo('greek_letter_english_name', 'lower'))).toBe(
+        'alpha',
+      )
+      expect(convertTo(1, typeInfo('greek_letter_english_name', 'upper'))).toBe(
+        'ALPHA',
+      )
+      expect(
+        convertTo(1, typeInfo('greek_letter_english_name', 'sentence')),
+      ).toBe('Alpha')
+      expect(
+        convertTo(24, typeInfo('greek_letter_english_name', 'lower')),
+      ).toBe('omega')
+      expect(
+        convertTo(24, typeInfo('greek_letter_english_name', 'upper')),
+      ).toBe('OMEGA')
     })
   })
 

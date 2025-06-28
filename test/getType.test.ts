@@ -84,6 +84,15 @@ describe('getTypes function', () => {
       expect(getTypes('А')).toContainEqual(typeInfo('cyrillic_letter', 'upper'))
       expect(getTypes('а')).toContainEqual(typeInfo('cyrillic_letter', 'lower'))
       expect(getTypes('Я')).toContainEqual(typeInfo('cyrillic_letter', 'upper'))
+      expect(getTypes('я')).toContainEqual(typeInfo('cyrillic_letter', 'lower'))
+    })
+
+    test('should detect Hebrew letters without case', () => {
+      expect(getTypes('א')).toContainEqual(typeInfo('hebrew_letter'))
+      expect(getTypes('ב')).toContainEqual(typeInfo('hebrew_letter'))
+      expect(getTypes('ת')).toContainEqual(typeInfo('hebrew_letter'))
+      expect(getTypes('י')).toContainEqual(typeInfo('hebrew_letter'))
+      expect(getTypes('ל')).toContainEqual(typeInfo('hebrew_letter'))
     })
   })
 
@@ -131,6 +140,27 @@ describe('getTypes function', () => {
       expect(getTypes('UN')).toContainEqual(typeInfo('french_words', 'upper'))
       expect(getTypes('Vingt-Et-Un')).toContainEqual(
         typeInfo('french_words', 'title'),
+      )
+    })
+
+    test('should detect Greek letter English names with case', () => {
+      expect(getTypes('Alpha')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'sentence'),
+      )
+      expect(getTypes('ALPHA')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'upper'),
+      )
+      expect(getTypes('alpha')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'lower'),
+      )
+      expect(getTypes('Omega')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'sentence'),
+      )
+      expect(getTypes('OMEGA')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'upper'),
+      )
+      expect(getTypes('omega')).toContainEqual(
+        typeInfo('greek_letter_english_name', 'lower'),
       )
     })
   })

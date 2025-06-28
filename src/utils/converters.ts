@@ -24,6 +24,10 @@ import {
   fromCyrillicLetter,
   toNatoPhonetic,
   fromNatoPhonetic,
+  fromHebrewLetter,
+  fromGreekLetterEnglishName,
+  toGreekLetterEnglishName,
+  toHebrewLetter,
 } from '../alphabet'
 import { toMonth, fromMonth, toDayOfWeek, fromDayOfWeek } from '../datetime'
 import { toBin, fromBin, toOct, fromOct, toHex, fromHex } from '../bases'
@@ -107,7 +111,9 @@ export const typeFromFns: Record<NumType, (str: string) => number> = {
   },
   latin_letter: fromLatinLetter,
   greek_letter: fromGreekLetter,
+  greek_letter_english_name: fromGreekLetterEnglishName,
   cyrillic_letter: fromCyrillicLetter,
+  hebrew_letter: fromHebrewLetter,
   // Special types that don't have conversion functions
   invalid: () => {
     throw new Error('Cannot convert invalid type')
@@ -217,9 +223,17 @@ export const typeToFns: Record<
     const upperCase = typeInfo?.case === 'upper'
     return toGreekLetter(num, upperCase)
   },
+  greek_letter_english_name: (num, typeInfo) => {
+    const result = toGreekLetterEnglishName(num)
+    return applyCase(result, typeInfo?.case)
+  },
   cyrillic_letter: (num, typeInfo) => {
     const upperCase = typeInfo?.case === 'upper'
     return toCyrillicLetter(num, upperCase)
+  },
+  hebrew_letter: (num, typeInfo) => {
+    const result = toHebrewLetter(num)
+    return applyCase(result, typeInfo?.case)
   },
   // Special types that don't have conversion functions
   invalid: () => {

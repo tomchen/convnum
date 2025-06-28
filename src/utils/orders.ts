@@ -12,32 +12,35 @@ import { NumType } from './types'
  * @remarks `VALID_NUM_TYPES` order:
  * 1. `decimal`
  * 2. `latin_letter`
- * 3. `greek_letter`
- * 4. `month_name`
- * 5. `day_of_week`
- * 6. `roman`
- * 7. `chinese_words`
- * 8. `chinese_financial`
- * 9. `chinese_heavenly_stem`
- * 10. `chinese_earthly_branch`
- * 11. `chinese_solar_term`
- * 12. `cyrillic_letter`
- * 13. `binary`
- * 14. `octal`
- * 15. `hexadecimal`
- * 16. `arabic`
- * 17. `english_cardinal`
- * 18. `english_words`
- * 19. `french_words`
- * 20. `astrological_sign`
- * 21. `nato_phonetic`
+ * 3. `month_name`
+ * 4. `day_of_week`
+ * 5. `greek_letter`
+ * 6. `greek_letter_english_name`
+ * 7. `roman`
+ * 8. `chinese_words`
+ * 9. `chinese_financial`
+ * 10. `chinese_heavenly_stem`
+ * 11. `chinese_earthly_branch`
+ * 12. `chinese_solar_term`
+ * 13. `cyrillic_letter`
+ * 14. `hebrew_letter`
+ * 15. `binary`
+ * 16. `octal`
+ * 17. `hexadecimal`
+ * 18. `arabic`
+ * 19. `english_cardinal`
+ * 20. `english_words`
+ * 21. `french_words`
+ * 22. `astrological_sign`
+ * 23. `nato_phonetic`
  */
 export const VALID_NUM_TYPES: NumType[] = [
   'decimal',
   'latin_letter',
-  'greek_letter',
   'month_name',
   'day_of_week',
+  'greek_letter',
+  'greek_letter_english_name',
   'roman',
   'chinese_words',
   'chinese_financial',
@@ -45,6 +48,7 @@ export const VALID_NUM_TYPES: NumType[] = [
   'chinese_earthly_branch',
   'chinese_solar_term',
   'cyrillic_letter',
+  'hebrew_letter',
   'binary',
   'octal',
   'hexadecimal',
@@ -70,25 +74,27 @@ export const VALID_NUM_TYPES: NumType[] = [
  * @remarks {@link VALID_NUM_TYPES} order:
  * 1. `decimal`
  * 2. `latin_letter`
- * 3. `greek_letter`
- * 4. `month_name`
- * 5. `day_of_week`
- * 6. `roman`
- * 7. `chinese_words`
- * 8. `chinese_financial`
- * 9. `chinese_heavenly_stem`
- * 10. `chinese_earthly_branch`
- * 11. `chinese_solar_term`
- * 12. `cyrillic_letter`
- * 13. `binary`
- * 14. `octal`
- * 15. `hexadecimal`
- * 16. `arabic`
- * 17. `english_cardinal`
- * 18. `english_words`
- * 19. `french_words`
- * 20. `astrological_sign`
- * 21. `nato_phonetic`
+ * 3. `month_name`
+ * 4. `day_of_week`
+ * 5. `greek_letter`
+ * 6. `greek_letter_english_name`
+ * 7. `roman`
+ * 8. `chinese_words`
+ * 9. `chinese_financial`
+ * 10. `chinese_heavenly_stem`
+ * 11. `chinese_earthly_branch`
+ * 12. `chinese_solar_term`
+ * 13. `cyrillic_letter`
+ * 14. `hebrew_letter`
+ * 15. `binary`
+ * 16. `octal`
+ * 17. `hexadecimal`
+ * 18. `arabic`
+ * 19. `english_cardinal`
+ * 20. `english_words`
+ * 21. `french_words`
+ * 22. `astrological_sign`
+ * 23. `nato_phonetic`
  */
 export const compareNumTypeOrder = (a: NumType, b: NumType) => {
   return VALID_NUM_TYPES.indexOf(a) - VALID_NUM_TYPES.indexOf(b)

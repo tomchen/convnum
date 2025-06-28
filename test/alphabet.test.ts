@@ -8,6 +8,10 @@ import {
   fromNatoPhonetic,
   toCyrillicLetter,
   fromCyrillicLetter,
+  toHebrewLetter,
+  fromHebrewLetter,
+  toGreekLetterEnglishName,
+  fromGreekLetterEnglishName,
 } from '../src'
 
 describe('Alphabet-related conversions', () => {
@@ -313,6 +317,207 @@ describe('Alphabet-related conversions', () => {
     test('fromNatoPhonetic invalid inputs', () => {
       expect(() => fromNatoPhonetic('')).toThrow()
       expect(() => fromNatoPhonetic('NotAWord')).toThrow()
+    })
+  })
+
+  describe('Hebrew letter conversions', () => {
+    test('toHebrewLetter basic cases', () => {
+      expect(toHebrewLetter(1)).toBe('א')
+      expect(toHebrewLetter(22)).toBe('ת')
+    })
+
+    test('toHebrewLetter all letters', () => {
+      const expected = 'אבגדהוזחטיכלמנסעפצקרשת'
+      for (let i = 1; i <= expected.length; i++) {
+        expect(toHebrewLetter(i)).toBe(expected[i - 1])
+      }
+    })
+
+    test('toHebrewLetter specific letters', () => {
+      expect(toHebrewLetter(1)).toBe('א') // Aleph
+      expect(toHebrewLetter(2)).toBe('ב') // Bet
+      expect(toHebrewLetter(3)).toBe('ג') // Gimel
+      expect(toHebrewLetter(4)).toBe('ד') // Dalet
+      expect(toHebrewLetter(10)).toBe('י') // Yod
+      expect(toHebrewLetter(11)).toBe('כ') // Kaf
+      expect(toHebrewLetter(12)).toBe('ל') // Lamed
+      expect(toHebrewLetter(13)).toBe('מ') // Mem
+      expect(toHebrewLetter(22)).toBe('ת') // Tav
+    })
+
+    test('toHebrewLetter invalid inputs', () => {
+      expect(() => toHebrewLetter(0)).toThrow()
+      expect(() => toHebrewLetter(23)).toThrow()
+      expect(() => toHebrewLetter(-1)).toThrow()
+      expect(() => toHebrewLetter(1.5)).toThrow()
+    })
+
+    test('fromHebrewLetter basic cases', () => {
+      expect(fromHebrewLetter('א')).toBe(1)
+      expect(fromHebrewLetter('ת')).toBe(22)
+    })
+
+    test('fromHebrewLetter all letters', () => {
+      const letters = 'אבגדהוזחטיכלמנסעפצקרשת'
+      for (let i = 0; i < 22; i++) {
+        expect(fromHebrewLetter(letters[i])).toBe(i + 1)
+      }
+    })
+
+    test('fromHebrewLetter specific letters', () => {
+      expect(fromHebrewLetter('א')).toBe(1) // Aleph
+      expect(fromHebrewLetter('ב')).toBe(2) // Bet
+      expect(fromHebrewLetter('ג')).toBe(3) // Gimel
+      expect(fromHebrewLetter('ד')).toBe(4) // Dalet
+      expect(fromHebrewLetter('י')).toBe(10) // Yod
+      expect(fromHebrewLetter('כ')).toBe(11) // Kaf
+      expect(fromHebrewLetter('ל')).toBe(12) // Lamed
+      expect(fromHebrewLetter('מ')).toBe(13) // Mem
+      expect(fromHebrewLetter('ת')).toBe(22) // Tav
+    })
+
+    test('fromHebrewLetter invalid inputs', () => {
+      expect(() => fromHebrewLetter('')).toThrow()
+      expect(() => fromHebrewLetter('אב')).toThrow()
+      expect(() => fromHebrewLetter('a')).toThrow()
+      expect(() => fromHebrewLetter('1')).toThrow()
+      expect(() => fromHebrewLetter('!')).toThrow()
+      expect(() => fromHebrewLetter('α')).toThrow()
+      expect(() => fromHebrewLetter('א́')).toThrow() // Hebrew with diacritic
+      expect(() => fromHebrewLetter('ך')).toThrow() // Final Kaf (not in standard 22)
+      expect(() => fromHebrewLetter('ם')).toThrow() // Final Mem (not in standard 22)
+      expect(() => fromHebrewLetter('ן')).toThrow() // Final Nun (not in standard 22)
+      expect(() => fromHebrewLetter('ף')).toThrow() // Final Pe (not in standard 22)
+      expect(() => fromHebrewLetter('ץ')).toThrow() // Final Tzade (not in standard 22)
+    })
+  })
+
+  describe('Greek letter English name conversions', () => {
+    test('toGreekLetterEnglishName basic cases', () => {
+      expect(toGreekLetterEnglishName(1)).toBe('Alpha')
+      expect(toGreekLetterEnglishName(24)).toBe('Omega')
+    })
+
+    test('toGreekLetterEnglishName all names', () => {
+      const expected = [
+        'Alpha',
+        'Beta',
+        'Gamma',
+        'Delta',
+        'Epsilon',
+        'Zeta',
+        'Eta',
+        'Theta',
+        'Iota',
+        'Kappa',
+        'Lambda',
+        'Mu',
+        'Nu',
+        'Xi',
+        'Omicron',
+        'Pi',
+        'Rho',
+        'Sigma',
+        'Tau',
+        'Upsilon',
+        'Phi',
+        'Chi',
+        'Psi',
+        'Omega',
+      ]
+      for (let i = 1; i <= expected.length; i++) {
+        expect(toGreekLetterEnglishName(i)).toBe(expected[i - 1])
+      }
+    })
+
+    test('toGreekLetterEnglishName specific names', () => {
+      expect(toGreekLetterEnglishName(1)).toBe('Alpha')
+      expect(toGreekLetterEnglishName(5)).toBe('Epsilon')
+      expect(toGreekLetterEnglishName(10)).toBe('Kappa')
+      expect(toGreekLetterEnglishName(15)).toBe('Omicron')
+      expect(toGreekLetterEnglishName(16)).toBe('Pi')
+      expect(toGreekLetterEnglishName(17)).toBe('Rho')
+      expect(toGreekLetterEnglishName(18)).toBe('Sigma')
+      expect(toGreekLetterEnglishName(21)).toBe('Phi')
+      expect(toGreekLetterEnglishName(24)).toBe('Omega')
+    })
+
+    test('toGreekLetterEnglishName invalid inputs', () => {
+      expect(() => toGreekLetterEnglishName(0)).toThrow()
+      expect(() => toGreekLetterEnglishName(25)).toThrow()
+      expect(() => toGreekLetterEnglishName(-1)).toThrow()
+      expect(() => toGreekLetterEnglishName(1.5)).toThrow()
+    })
+
+    test('fromGreekLetterEnglishName basic cases', () => {
+      expect(fromGreekLetterEnglishName('Alpha')).toBe(1)
+      expect(fromGreekLetterEnglishName('Omega')).toBe(24)
+    })
+
+    test('fromGreekLetterEnglishName case insensitive', () => {
+      expect(fromGreekLetterEnglishName('alpha')).toBe(1)
+      expect(fromGreekLetterEnglishName('omega')).toBe(24)
+      expect(fromGreekLetterEnglishName('ALPHA')).toBe(1)
+      expect(fromGreekLetterEnglishName('OMEGA')).toBe(24)
+      expect(fromGreekLetterEnglishName('AlPhA')).toBe(1)
+      expect(fromGreekLetterEnglishName('oMeGa')).toBe(24)
+    })
+
+    test('fromGreekLetterEnglishName all names', () => {
+      const names = [
+        'Alpha',
+        'Beta',
+        'Gamma',
+        'Delta',
+        'Epsilon',
+        'Zeta',
+        'Eta',
+        'Theta',
+        'Iota',
+        'Kappa',
+        'Lambda',
+        'Mu',
+        'Nu',
+        'Xi',
+        'Omicron',
+        'Pi',
+        'Rho',
+        'Sigma',
+        'Tau',
+        'Upsilon',
+        'Phi',
+        'Chi',
+        'Psi',
+        'Omega',
+      ]
+      for (let i = 0; i < 24; i++) {
+        expect(fromGreekLetterEnglishName(names[i])).toBe(i + 1)
+        expect(fromGreekLetterEnglishName(names[i].toLowerCase())).toBe(i + 1)
+        expect(fromGreekLetterEnglishName(names[i].toUpperCase())).toBe(i + 1)
+      }
+    })
+
+    test('fromGreekLetterEnglishName specific names', () => {
+      expect(fromGreekLetterEnglishName('Alpha')).toBe(1)
+      expect(fromGreekLetterEnglishName('Epsilon')).toBe(5)
+      expect(fromGreekLetterEnglishName('Kappa')).toBe(10)
+      expect(fromGreekLetterEnglishName('Omicron')).toBe(15)
+      expect(fromGreekLetterEnglishName('Pi')).toBe(16)
+      expect(fromGreekLetterEnglishName('Rho')).toBe(17)
+      expect(fromGreekLetterEnglishName('Sigma')).toBe(18)
+      expect(fromGreekLetterEnglishName('Phi')).toBe(21)
+      expect(fromGreekLetterEnglishName('Omega')).toBe(24)
+    })
+
+    test('fromGreekLetterEnglishName invalid inputs', () => {
+      expect(() => fromGreekLetterEnglishName('')).toThrow()
+      expect(() => fromGreekLetterEnglishName('NotAGreekLetter')).toThrow()
+      expect(() => fromGreekLetterEnglishName('Alpha Beta')).toThrow()
+      expect(() => fromGreekLetterEnglishName('α')).toThrow() // Greek letter, not English name
+      expect(() => fromGreekLetterEnglishName('Beta1')).toThrow()
+      expect(() => fromGreekLetterEnglishName('Alphas')).toThrow()
+      expect(() => fromGreekLetterEnglishName('1')).toThrow()
+      expect(() => fromGreekLetterEnglishName('!')).toThrow()
     })
   })
 })

@@ -177,3 +177,74 @@ export function fromNatoPhonetic(word: string): number {
   }
   return index + 1
 }
+
+// prettier-ignore
+export const hebrewLetters = [
+  'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',
+]
+
+/**
+ * Converts a number to a standard Hebrew letter
+ * @param num - The number to convert (must be between 1 and 22)
+ * @returns The corresponding Hebrew letter
+ * @throws Error if input is out of valid range
+ */
+export function toHebrewLetter(num: number): string {
+  if (num < 1 || num > 22 || !Number.isInteger(num)) {
+    throw new Error('Input must be an integer between 1 and 22')
+  }
+  return hebrewLetters[num - 1]
+}
+
+/**
+ * Converts a standard Hebrew letter to its corresponding number
+ * @param letter - The Hebrew letter (must be a single letter from the standard 22-letter Hebrew alphabet)
+ * @returns The corresponding number (1-22)
+ * @throws Error if input is not a valid standard Hebrew letter
+ */
+export function fromHebrewLetter(letter: string): number {
+  if (!letter || letter.length !== 1) {
+    throw new Error('Input must be a single letter')
+  }
+  const index = hebrewLetters.indexOf(letter)
+  if (index === -1) {
+    throw new Error('Input must be a valid Hebrew letter')
+  }
+  return index + 1
+}
+
+// prettier-ignore
+export const greekLetterEnglishNames = [
+  'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho', 'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega',
+]
+
+/**
+ * Converts a number to a Greek letter English name
+ * @param num - The number to convert (must be between 1 and 24)
+ * @returns The corresponding Greek letter English name
+ * @throws Error if input is out of valid range
+ */
+export function toGreekLetterEnglishName(num: number): string {
+  if (num < 1 || num > 24 || !Number.isInteger(num)) {
+    throw new Error('Input must be an integer between 1 and 24')
+  }
+  return greekLetterEnglishNames[num - 1]
+}
+
+/**
+ * Converts a Greek letter English name to its corresponding number
+ * @param name - The Greek letter English name (case insensitive)
+ * @returns The corresponding number (1-24)
+ * @throws Error if input is not a valid Greek letter English name
+ */
+export function fromGreekLetterEnglishName(name: string): number {
+  if (!name) {
+    throw new Error('Input must be a valid Greek letter English name')
+  }
+  const normalizedName = capitalizeFirstLetter(name)
+  const index = greekLetterEnglishNames.indexOf(normalizedName)
+  if (index === -1) {
+    throw new Error('Input must be a valid Greek letter English name')
+  }
+  return index + 1
+}

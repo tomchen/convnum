@@ -26,6 +26,8 @@ export const numeralLength: Partial<Record<NumType, number>> = {
   cyrillic_letter: 33,
   astrological_sign: 12,
   nato_phonetic: 26,
+  hebrew_letter: 22,
+  greek_letter_english_name: 24,
 }
 
 /**

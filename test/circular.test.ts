@@ -248,6 +248,16 @@ describe('toBasicRange function', () => {
       // Greek alphabet (24 letters)
       expect(toBasicRange(25, 'greek_letter')).toBe(1) // α after ω
       expect(toBasicRange(48, 'greek_letter')).toBe(24) // ω of second cycle
+
+      // Hebrew alphabet (22 letters)
+      expect(toBasicRange(23, 'hebrew_letter')).toBe(1) // א after ת
+      expect(toBasicRange(44, 'hebrew_letter')).toBe(22) // ת of second cycle
+      expect(toBasicRange(-1, 'hebrew_letter')).toBe(21) // ש before א
+
+      // Greek letter English names (24 names)
+      expect(toBasicRange(25, 'greek_letter_english_name')).toBe(1) // Alpha after Omega
+      expect(toBasicRange(48, 'greek_letter_english_name')).toBe(24) // Omega of second cycle
+      expect(toBasicRange(-1, 'greek_letter_english_name')).toBe(23) // Psi before Alpha
     })
   })
 })
@@ -344,6 +354,36 @@ describe('convertTo function', () => {
       // Earthly branches (12 elements)
       expect(convertTo(13, { type: 'chinese_earthly_branch' })).toBe('子') // wraps to 1st
       expect(convertTo(24, { type: 'chinese_earthly_branch' })).toBe('亥') // wraps to 12th
+    })
+
+    test('Hebrew letters wrap around correctly', () => {
+      // 23rd letter wraps to 1st (א)
+      expect(convertTo(23, { type: 'hebrew_letter' })).toBe('א')
+
+      // 44th letter wraps to 22nd (ת)
+      expect(convertTo(44, { type: 'hebrew_letter' })).toBe('ת')
+
+      // Negative numbers wrap backwards
+      expect(convertTo(-1, { type: 'hebrew_letter' })).toBe('ש') // 21st letter
+      expect(convertTo(0, { type: 'hebrew_letter' })).toBe('ת') // 22nd letter
+    })
+
+    test('Greek letter English names wrap around correctly', () => {
+      // 25th name wraps to 1st (Alpha)
+      expect(convertTo(25, { type: 'greek_letter_english_name' })).toBe('Alpha')
+      expect(
+        convertTo(25, { type: 'greek_letter_english_name', case: 'lower' }),
+      ).toBe('alpha')
+
+      // 48th name wraps to 24th (Omega)
+      expect(convertTo(48, { type: 'greek_letter_english_name' })).toBe('Omega')
+      expect(
+        convertTo(48, { type: 'greek_letter_english_name', case: 'upper' }),
+      ).toBe('OMEGA')
+
+      // Negative numbers wrap backwards
+      expect(convertTo(-1, { type: 'greek_letter_english_name' })).toBe('Psi') // 23rd name
+      expect(convertTo(0, { type: 'greek_letter_english_name' })).toBe('Omega') // 24th name
     })
 
     test('Roman numerals do not wrap for invalid values', () => {
